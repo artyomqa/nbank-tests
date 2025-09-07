@@ -5,16 +5,13 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// в методе createUsersAndAccounts есть лишние действия, которые нужны для других классов с тестами (напр. второй юзер)
+// TODO в методе createUsersAndAccounts есть лишние действия, которые нужны для других классов с тестами (напр. второй юзер)
 public class DepositMoneyTest {
     private static String adminToken;
     private static String firstUserToken;
@@ -90,47 +87,24 @@ public class DepositMoneyTest {
         secondUserId = responseCreatedSecondUser.jsonPath().getInt("id");
 
         // Создание счета у первого пользователя
-        firstUserAccountId1 = given()
-                .header("Authorization", firstUserToken)
-                .when()
-                .post("/api/v1/accounts")
-                .then()
-                .statusCode(201)
-                .extract()
-                .body()
-                .path("id");
+        firstUserAccountId1 = createBankAccount(firstUserToken);
 
         // Создание второго счета у первого пользователя
-        firstUserAccountId2 = given()
-                .header("Authorization", firstUserToken)
-                .when()
-                .post("/api/v1/accounts")
-                .then()
-                .statusCode(201)
-                .extract()
-                .body()
-                .path("id");
+        firstUserAccountId2 = createBankAccount(firstUserToken);
 
         // Создание счета у второго пользователя
-        secondUserAccountId1 = given()
-                .header("Authorization", secondUserToken)
-                .when()
-                .post("/api/v1/accounts")
-                .then()
-                .statusCode(201)
-                .extract()
-                .path("id");
+        secondUserAccountId1 = createBankAccount(secondUserToken);
     }
 
     // Удаляем юзеров после прохождения всех тестов
     @AfterAll
     public static void deleteUsers() {
-        given()
-                .header("Authorization", adminToken)
-                .when()
-                .get("/api/v1/admin/users")
-                .then()
-                .log().body();
+//        given()
+//                .header("Authorization", adminToken)
+//                .when()
+//                .get("/api/v1/admin/users")
+//                .then()
+//                .log().body();
 
         given()
                 .header("Authorization", adminToken)
@@ -145,32 +119,39 @@ public class DepositMoneyTest {
 
     @ParameterizedTest
     @DisplayName("Пополнение баланса (позитивные сценарии)")
-    @MethodSource("getValidAmounts")
-    public void depositMoneyPositiveTest(double value, double totalSum) {
+    @ValueSource(floats = {100f, 115.99f, 20.5f, 0.01f, 5000.00f})
+    public void depositMoneyPositiveTest(float amount) {
+        // Получаем текущий баланс пользователя
+        float currentBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
+
+        // Ожидаемый баланс после внесения депозита (округляем до 2 знаков после запятой, чтобы избежать неточностей)
+        float expectedBalance = (float) Math.round((currentBalance + amount) * 100) / 100;
+
+        // Пополняем баланс и проверяем, что в ответе получено корректное значение баланса
         given()
                 .header("Authorization", firstUserToken)
                 .contentType(ContentType.JSON)
-                .body(generateRequestBody(firstUserAccountId1, value))
+                .body(generateRequestBody(firstUserAccountId1, amount))
                 .when()
                 .post("/api/v1/accounts/deposit")
                 .then()
                 .statusCode(200)
                 .body("id", equalTo(firstUserAccountId1))
-                .body("balance", equalTo((float) totalSum));
-    }
+                .body("balance", equalTo(expectedBalance));
 
-    public static Stream<Arguments> getValidAmounts() {
-        return Stream.of(
-                Arguments.of(100, 100),
-                Arguments.of(115.99, 215.99),
-                Arguments.of(20.5, 236.49)
-        );
+        // Проверяем, что баланс пользователя изменился
+        float actualBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
+        assertEquals(expectedBalance, actualBalance);
     }
 
     @ParameterizedTest
     @DisplayName("Невалидные значения суммы")
-    @ValueSource(ints = {0, -1})
-    public void depositWithInvalidAmountTest(int amount) {
+    @ValueSource(floats = {0f, 5000.01f, -1f})
+    public void depositWithInvalidAmountTest(float amount) {
+        // Получаем текущий баланс пользователя
+        float currentBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
+
+        // Пытаемся пополнить баланс и проверяем, что в ответе статус-код 400
         given()
                 .header("Authorization", firstUserToken)
                 .contentType(ContentType.JSON)
@@ -179,6 +160,10 @@ public class DepositMoneyTest {
                 .post("/api/v1/accounts/deposit")
                 .then()
                 .statusCode(400);
+
+        // Проверяем, что баланс пользователя не изменился
+        float actualBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
+        assertEquals(currentBalance, actualBalance);
     }
 
     @Test
@@ -232,12 +217,34 @@ public class DepositMoneyTest {
                 .statusCode(401);
     }
 
-    private String generateRequestBody(int id, Number balance) {
+    private String generateRequestBody(int accountId, Number balance) {
         return """
                 {
                     "id": %d,
                     "balance": %s
                 }
-                """.formatted(id, balance);
+                """.formatted(accountId, balance);
+    }
+
+    private static int createBankAccount(String userToken) {
+        return given()
+                .header("Authorization", userToken)
+                .when()
+                .post("/api/v1/accounts")
+                .then()
+                .statusCode(201)
+                .extract()
+                .path("id");
+    }
+
+    private float getAccountBalance(String userToken, int accountId) {
+        return given()
+                .header("Authorization", userToken)
+                .when()
+                .get("/api/v1/customer/accounts")
+                .then()
+                .statusCode(200)
+                .extract()
+                .path("find { it.id == %s }.balance".formatted(accountId));
     }
 }
