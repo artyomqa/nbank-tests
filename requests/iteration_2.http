@@ -77,6 +77,28 @@ Content-Type: application/json
 }
 
 
+### Пополнение баланса на максимальную суммую (5000).
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 5000.00
+}
+
+
+### Пополнение баланса на сумму, превышающую максимальную (>5000).
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 5000.01
+}
+
+
 ### Получение счетов пользователя.
 GET http://localhost:4111/api/v1/customer/accounts
 Authorization: Basic QWxleDpwYXNzMTIzVyE=
@@ -184,6 +206,41 @@ Content-Type: application/json
     "senderAccountId": 2,
     "receiverAccountId": 3,
     "amount": 10
+}
+
+
+### Перевод минимально возможной суммы (0.01).
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 6,
+    "receiverAccountId": 5,
+    "amount": 0.01
+}
+
+
+### Перевод максимально возможной суммы (10000).
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 2,
+    "receiverAccountId": 3,
+    "amount": 10000.0
+}
+
+### Перевод суммы, превышающей максимально допустимую (>10000).
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 2,
+    "receiverAccountId": 3,
+    "amount": 10000.01
 }
 
 
