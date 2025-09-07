@@ -77,6 +77,17 @@ Content-Type: application/json
 }
 
 
+### Пополнение баланса на минимальную возможную сумму (0.01).
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 0.01
+}
+
+
 ### Пополнение баланса на максимальную суммую (5000).
 POST http://localhost:4111/api/v1/accounts/deposit
 Authorization: Basic QWxleDpwYXNzMTIzVyE=
@@ -231,6 +242,7 @@ Content-Type: application/json
     "receiverAccountId": 3,
     "amount": 10000.0
 }
+
 
 ### Перевод суммы, превышающей максимально допустимую (>10000).
 POST http://localhost:4111/api/v1/accounts/transfer
