@@ -11,15 +11,15 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// TODO в методе createUsersAndAccounts есть лишние действия, которые нужны для других классов с тестами (напр. второй юзер)
 public class DepositMoneyTest {
     private static String adminToken;
+
     private static String firstUserToken;
     private static int firstUserId;
+    private static int firstUserAccountId1;
+
     private static String secondUserToken;
     private static int secondUserId;
-    private static int firstUserAccountId1;
-    private static int firstUserAccountId2;
     private static int secondUserAccountId1;
 
     @BeforeAll
@@ -89,9 +89,6 @@ public class DepositMoneyTest {
         // Создание счета у первого пользователя
         firstUserAccountId1 = createBankAccount(firstUserToken);
 
-        // Создание второго счета у первого пользователя
-        firstUserAccountId2 = createBankAccount(firstUserToken);
-
         // Создание счета у второго пользователя
         secondUserAccountId1 = createBankAccount(secondUserToken);
     }
@@ -99,13 +96,6 @@ public class DepositMoneyTest {
     // Удаляем юзеров после прохождения всех тестов
     @AfterAll
     public static void deleteUsers() {
-//        given()
-//                .header("Authorization", adminToken)
-//                .when()
-//                .get("/api/v1/admin/users")
-//                .then()
-//                .log().body();
-
         given()
                 .header("Authorization", adminToken)
                 .when()
