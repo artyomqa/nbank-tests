@@ -3,10 +3,7 @@ package iteration2;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -26,8 +23,9 @@ public class TransferMoneyTest {
     private static int secondUserId;
     private static int secondUserAccountId1;
 
+    // Перед запуском всех тестов получаем токен админа
     @BeforeAll
-    public static void createUsersAndAccounts() {
+    public static void setup() {
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = 4111;
 
@@ -41,24 +39,27 @@ public class TransferMoneyTest {
                         }
                         """)
                 .when()
-                .post("api/v1/auth/login")
+                .post("/api/v1/auth/login")
                 .then()
                 .statusCode(200)
                 .extract()
                 .header("Authorization");
+    }
 
-
+    // Перед запуском каждого теста создаем пользователей и счета
+    @BeforeEach
+    public void createUsersAndAccounts() {
         // Создание первого пользователя и получение токена
         Response responseCreatedFirstUser = given()
                 .header("Authorization", adminToken)
                 .contentType(ContentType.JSON)
                 .body("""
                         {
-                            "username": "Alex",
+                            "username": "%s",
                             "password": "pass123W!",
                             "role": "USER"
                         }
-                        """)
+                        """.formatted("user" + (int)(Math.random() * 9000)))
                 .when()
                 .post("/api/v1/admin/users")
                 .then()
@@ -75,11 +76,11 @@ public class TransferMoneyTest {
                 .contentType(ContentType.JSON)
                 .body("""
                         {
-                            "username": "Anna",
+                            "username": "%s",
                             "password": "pass111X!",
                             "role": "USER"
                         }
-                        """)
+                        """.formatted("user" + (int)(Math.random() * 9000)))
                 .when()
                 .post("/api/v1/admin/users")
                 .then()
@@ -98,35 +99,11 @@ public class TransferMoneyTest {
 
         // Создание счета у второго пользователя
         secondUserAccountId1 = createBankAccount(secondUserToken);
-
-        // Пополнение счета первого пользователя на 30000
-        for (int i = 0; i < 6; i++) {
-            given()
-                    .header("Authorization", firstUserToken)
-                    .contentType(ContentType.JSON)
-                    .body("""
-                            {
-                                "id": %d,
-                                "balance": 5000
-                            }
-                            """.formatted(firstUserAccountId1))
-                    .when()
-                    .post("/api/v1/accounts/deposit")
-                    .then()
-                    .statusCode(200);
-        }
     }
 
-    // Удаляем юзеров после прохождения всех тестов
-    @AfterAll
-    public static void deleteUsers() {
-//        given()
-//                .header("Authorization", adminToken)
-//                .when()
-//                .get("/api/v1/admin/users")
-//                .then()
-//                .log().body();
-
+    // Удаляем юзеров после прохождения каждого теста
+    @AfterEach
+    public void deleteUsers() {
         given()
                 .header("Authorization", adminToken)
                 .when()
@@ -142,12 +119,24 @@ public class TransferMoneyTest {
     @DisplayName("Перевод между своими счетами")
     @ValueSource(floats = {100f, 20.5f, 115.99f, 0.01f, 10000.00f})
     public void transferBetweenOwnAccountsTest(float amount) {
-        // Получаем текущий баланс на счете-отправителе
-        float senderInitialBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
+        // Пополняем счет первого пользователя на 10000
+        for (int i = 0; i < 2; i++) {
+            given()
+                    .header("Authorization", firstUserToken)
+                    .contentType(ContentType.JSON)
+                    .body("""
+                            {
+                                "id": %d,
+                                "balance": 5000
+                            }
+                            """.formatted(firstUserAccountId1))
+                    .when()
+                    .post("/api/v1/accounts/deposit")
+                    .then()
+                    .statusCode(200);
+        }
 
-        // Получаем текущий баланс на счете-получателе
-        float receiverInitialBalance = getAccountBalance(firstUserToken, firstUserAccountId2);
-
+        // Выполняем перевод
         given()
                 .header("Authorization", firstUserToken)
                 .contentType(ContentType.JSON)
@@ -168,25 +157,34 @@ public class TransferMoneyTest {
         float receiverFinalBalance = getAccountBalance(firstUserToken, firstUserAccountId2);
 
         // Ожидаемый баланс счета-отправителя (округляем до 2 знаков после запятой, чтобы избежать неточностей)
-        float senderExpectedBalance = (float) Math.round((senderInitialBalance - amount) * 100) / 100;
-
-        // Ожидаемый баланс счета-получаетля (округляем до 2 знаков после запятой, чтобы избежать неточностей)
-        float receiverExpectedBalance = (float) Math.round((receiverInitialBalance + amount) * 100) / 100;
+        float senderExpectedBalance = (float) Math.round((10000f - amount) * 100) / 100;
 
         assertEquals(senderExpectedBalance, senderFinalBalance);
-        assertEquals(receiverExpectedBalance, receiverFinalBalance);
+        assertEquals(amount, receiverFinalBalance);
     }
 
     @ParameterizedTest
     @DisplayName("Перевод на счет другого пользователя")
     @ValueSource(floats = {100f, 20.5f, 115.99f, 0.01f, 10000.00f})
     public void transferToAnotherUsersAccountTest(float amount) {
-        // Получаем текущий баланс на счете-отправителе
-        float senderInitialBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
+        // Пополняем счет первого пользователя на 10000
+        for (int i = 0; i < 2; i++) {
+            given()
+                    .header("Authorization", firstUserToken)
+                    .contentType(ContentType.JSON)
+                    .body("""
+                            {
+                                "id": %d,
+                                "balance": 5000
+                            }
+                            """.formatted(firstUserAccountId1))
+                    .when()
+                    .post("/api/v1/accounts/deposit")
+                    .then()
+                    .statusCode(200);
+        }
 
-        // Получаем текущий баланс на счете-получателе
-        float receiverInitialBalance = getAccountBalance(secondUserToken, secondUserAccountId1);
-
+        // Выполняем перевод
         given()
                 .header("Authorization", firstUserToken)
                 .contentType(ContentType.JSON)
@@ -207,48 +205,10 @@ public class TransferMoneyTest {
         float receiverFinalBalance = getAccountBalance(secondUserToken, secondUserAccountId1);
 
         // Ожидаемый баланс счета-отправителя (округляем до 2 знаков после запятой, чтобы избежать неточностей)
-        float senderExpectedBalance = (float) Math.round((senderInitialBalance - amount) * 100) / 100;
-
-        // Ожидаемый баланс счета-получаетля (округляем до 2 знаков после запятой, чтобы избежать неточностей)
-        float receiverExpectedBalance = (float) Math.round((receiverInitialBalance + amount) * 100) / 100;
+        float senderExpectedBalance = (float) Math.round((10000f - amount) * 100) / 100;
 
         assertEquals(senderExpectedBalance, senderFinalBalance);
-        assertEquals(receiverExpectedBalance, receiverFinalBalance);
-    }
-
-    @Test
-    @DisplayName("Перевод всей суммы на балансе")
-    public void transferAllMoneyTest() {
-        // Создаем счет для теста
-        int accountId = createBankAccount(firstUserToken);
-        float amount = 5000;
-
-        // Пополняем баланс
-        given()
-                .header("Authorization", firstUserToken)
-                .contentType(ContentType.JSON)
-                .body("""
-                            {
-                                "id": %d,
-                                "balance": %s
-                            }
-                            """.formatted(accountId, amount))
-                .when()
-                .post("/api/v1/accounts/deposit")
-                .then()
-                .statusCode(200);
-
-        // Переводим всю сумму
-        given()
-                .header("Authorization", firstUserToken)
-                .contentType(ContentType.JSON)
-                .body(generateRequestBody(firstUserAccountId1, secondUserAccountId1, amount))
-                .when()
-                .post("/api/v1/accounts/transfer")
-                .then()
-                .statusCode(200)
-                .body("message", equalTo("Transfer successful"))
-                .body("amount", equalTo(amount));
+        assertEquals(amount, receiverFinalBalance);
     }
 
 

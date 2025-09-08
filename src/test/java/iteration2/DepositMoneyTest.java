@@ -37,7 +37,7 @@ public class DepositMoneyTest {
                         }
                         """)
                 .when()
-                .post("api/v1/auth/login")
+                .post("/api/v1/auth/login")
                 .then()
                 .statusCode(200)
                 .extract()
