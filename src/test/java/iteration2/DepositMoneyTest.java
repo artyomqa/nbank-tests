@@ -107,6 +107,8 @@ public class DepositMoneyTest {
                 .delete("/api/v1/admin/users/" + secondUserId);
     }
 
+
+
     @ParameterizedTest
     @DisplayName("Пополнение баланса (позитивные сценарии)")
     @ValueSource(floats = {100f, 115.99f, 20.5f, 0.01f, 5000.00f})
@@ -206,6 +208,35 @@ public class DepositMoneyTest {
                 .then()
                 .statusCode(401);
     }
+
+    @Test
+    @DisplayName("Получение информации о депозите")
+    public void getDepositInfoTest() {
+        float depositAmount = 20.0f;
+        int accountId = createBankAccount(firstUserToken);
+
+        // Пополняем баланс
+        given()
+                .header("Authorization", firstUserToken)
+                .contentType(ContentType.JSON)
+                .body(generateRequestBody(accountId, depositAmount))
+                .when()
+                .post("/api/v1/accounts/deposit")
+                .then()
+                .statusCode(200);
+
+        // Проверяем, что на счете есть депозит на нужную сумму (amount) и он связан с этим счетом (relatedAccountId)
+        given()
+                .header("Authorization", firstUserToken)
+                .when()
+                .get("/api/v1/accounts/%d/transactions".formatted(accountId))
+                .then()
+                .statusCode(200)
+                .body("find { it.type == 'DEPOSIT' }.amount", equalTo(depositAmount))
+                .body("find { it.type == 'DEPOSIT' }.relatedAccountId", equalTo(accountId));
+    }
+
+
 
     private String generateRequestBody(int accountId, Number balance) {
         return """
