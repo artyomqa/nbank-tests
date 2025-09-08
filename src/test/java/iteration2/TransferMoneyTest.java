@@ -6,6 +6,7 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -119,12 +120,12 @@ public class TransferMoneyTest {
     // Удаляем юзеров после прохождения всех тестов
     @AfterAll
     public static void deleteUsers() {
-        given()
-                .header("Authorization", adminToken)
-                .when()
-                .get("/api/v1/admin/users")
-                .then()
-                .log().body();
+//        given()
+//                .header("Authorization", adminToken)
+//                .when()
+//                .get("/api/v1/admin/users")
+//                .then()
+//                .log().body();
 
         given()
                 .header("Authorization", adminToken)
@@ -213,6 +214,41 @@ public class TransferMoneyTest {
 
         assertEquals(senderExpectedBalance, senderFinalBalance);
         assertEquals(receiverExpectedBalance, receiverFinalBalance);
+    }
+
+    @Test
+    @DisplayName("Перевод всей суммы на балансе")
+    public void transferAllMoneyTest() {
+        // Создаем счет для теста
+        int accountId = createBankAccount(firstUserToken);
+        float amount = 5000;
+
+        // Пополняем баланс
+        given()
+                .header("Authorization", firstUserToken)
+                .contentType(ContentType.JSON)
+                .body("""
+                            {
+                                "id": %d,
+                                "balance": %s
+                            }
+                            """.formatted(accountId, amount))
+                .when()
+                .post("/api/v1/accounts/deposit")
+                .then()
+                .statusCode(200);
+
+        // Переводим всю сумму
+        given()
+                .header("Authorization", firstUserToken)
+                .contentType(ContentType.JSON)
+                .body(generateRequestBody(firstUserAccountId1, secondUserAccountId1, amount))
+                .when()
+                .post("/api/v1/accounts/transfer")
+                .then()
+                .statusCode(200)
+                .body("message", equalTo("Transfer successful"))
+                .body("amount", equalTo(amount));
     }
 
 
