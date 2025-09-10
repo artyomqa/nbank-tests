@@ -99,14 +99,17 @@ public class DepositMoneyTest {
         given()
                 .header("Authorization", adminToken)
                 .when()
-                .delete("/api/v1/admin/users/" + firstUserId);
+                .delete("/api/v1/admin/users/" + firstUserId)
+                .then()
+                .statusCode(200);
 
         given()
                 .header("Authorization", adminToken)
                 .when()
-                .delete("/api/v1/admin/users/" + secondUserId);
+                .delete("/api/v1/admin/users/" + secondUserId)
+                .then()
+                .statusCode(200);
     }
-
 
 
     @ParameterizedTest
@@ -235,7 +238,6 @@ public class DepositMoneyTest {
                 .body("find { it.type == 'DEPOSIT' }.amount", equalTo(depositAmount))
                 .body("find { it.type == 'DEPOSIT' }.relatedAccountId", equalTo(accountId));
     }
-
 
 
     private String generateRequestBody(int accountId, Number balance) {

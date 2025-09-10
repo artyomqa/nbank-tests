@@ -107,14 +107,17 @@ public class TransferMoneyTest {
         given()
                 .header("Authorization", adminToken)
                 .when()
-                .delete("/api/v1/admin/users/" + firstUserId);
+                .delete("/api/v1/admin/users/" + firstUserId)
+                .then()
+                .statusCode(200);
 
         given()
                 .header("Authorization", adminToken)
                 .when()
-                .delete("/api/v1/admin/users/" + secondUserId);
+                .delete("/api/v1/admin/users/" + secondUserId)
+                .then()
+                .statusCode(200);
     }
-
 
 
     @ParameterizedTest
@@ -250,6 +253,22 @@ public class TransferMoneyTest {
     }
 
     @Test
+    @DisplayName("Перевод на тот же самый счет")
+    @Disabled("Тест временно отключен. Есть дефект.")
+    public void transferToTheSameAccountTest() {
+        depositMoney(firstUserToken, firstUserAccountId1, 50.0f);
+
+        given()
+                .header("Authorization", firstUserToken)
+                .contentType(ContentType.JSON)
+                .body(generateRequestBody(firstUserAccountId1, firstUserAccountId1, 10))
+                .when()
+                .post("/api/v1/accounts/transfer")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
     @DisplayName("Перевод от имени администратора")
     public void transferMoneyByAdminTest() {
         depositMoney(firstUserToken, firstUserAccountId1, 50.0f);
@@ -318,7 +337,6 @@ public class TransferMoneyTest {
                 .body("find { it.type == 'TRANSFER_IN' }.amount", equalTo(transferAmount))
                 .body("find { it.type == 'TRANSFER_IN' }.relatedAccountId", equalTo(firstUserAccountId1));
     }
-
 
 
     private String generateRequestBody(int senderAccountId, int receiverAccountId, Number balance) {
