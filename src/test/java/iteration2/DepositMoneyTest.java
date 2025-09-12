@@ -1,6 +1,5 @@
 package iteration2;
 
-import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
@@ -11,9 +10,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DepositMoneyTest {
-    private static String adminToken;
-
+public class DepositMoneyTest extends BaseTest {
     private static String firstUserToken;
     private static int firstUserId;
     private static int firstUserAccountId1;
@@ -24,26 +21,6 @@ public class DepositMoneyTest {
 
     @BeforeAll
     public static void createUsersAndAccounts() {
-        RestAssured.baseURI = "http://localhost";
-        RestAssured.port = 4111;
-
-        // Получение токена админа
-        adminToken = given()
-                .contentType(ContentType.JSON)
-                .body("""
-                        {
-                            "username": "admin",
-                            "password": "admin"
-                        }
-                        """)
-                .when()
-                .post("/api/v1/auth/login")
-                .then()
-                .statusCode(200)
-                .extract()
-                .header("Authorization");
-
-
         // Создание первого пользователя и получение токена
         Response responseCreatedFirstUser = given()
                 .header("Authorization", adminToken)
@@ -247,27 +224,5 @@ public class DepositMoneyTest {
                     "balance": %s
                 }
                 """.formatted(accountId, balance);
-    }
-
-    private static int createBankAccount(String userToken) {
-        return given()
-                .header("Authorization", userToken)
-                .when()
-                .post("/api/v1/accounts")
-                .then()
-                .statusCode(201)
-                .extract()
-                .path("id");
-    }
-
-    private float getAccountBalance(String userToken, int accountId) {
-        return given()
-                .header("Authorization", userToken)
-                .when()
-                .get("/api/v1/customer/accounts")
-                .then()
-                .statusCode(200)
-                .extract()
-                .path("find { it.id == %s }.balance".formatted(accountId));
     }
 }

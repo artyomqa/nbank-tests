@@ -1,6 +1,5 @@
 package iteration2;
 
-import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterAll;
@@ -14,32 +13,12 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
-public class ChangeUsernameTest {
-    private static String adminToken;
+public class ChangeUsernameTest extends BaseTest {
     private static String userToken;
     private static int userId;
 
     @BeforeAll
-    public static void setup() {
-        RestAssured.baseURI = "http://localhost";
-        RestAssured.port = 4111;
-
-        // Получение токена админа
-        adminToken = given()
-                .contentType(ContentType.JSON)
-                .body("""
-                        {
-                            "username": "admin",
-                            "password": "admin"
-                        }
-                        """)
-                .when()
-                .post("/api/v1/auth/login")
-                .then()
-                .statusCode(200)
-                .extract()
-                .header("Authorization");
-
+    public static void createUser() {
         // Создание пользователя и получение токена и id
         Response responseCreatedUser = given()
                 .header("Authorization", adminToken)

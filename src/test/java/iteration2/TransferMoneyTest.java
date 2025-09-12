@@ -1,6 +1,5 @@
 package iteration2;
 
-import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
@@ -11,9 +10,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TransferMoneyTest {
-    private static String adminToken;
-
+public class TransferMoneyTest extends BaseTest {
     private static String firstUserToken;
     private static int firstUserId;
     private static int firstUserAccountId1;
@@ -22,29 +19,6 @@ public class TransferMoneyTest {
     private static String secondUserToken;
     private static int secondUserId;
     private static int secondUserAccountId1;
-
-    // Перед запуском всех тестов получаем токен админа
-    @BeforeAll
-    public static void setup() {
-        RestAssured.baseURI = "http://localhost";
-        RestAssured.port = 4111;
-
-        // Получение токена админа
-        adminToken = given()
-                .contentType(ContentType.JSON)
-                .body("""
-                        {
-                            "username": "admin",
-                            "password": "admin"
-                        }
-                        """)
-                .when()
-                .post("/api/v1/auth/login")
-                .then()
-                .statusCode(200)
-                .extract()
-                .header("Authorization");
-    }
 
     // Перед запуском каждого теста создаем пользователей и счета
     @BeforeEach
@@ -349,17 +323,6 @@ public class TransferMoneyTest {
                 """.formatted(senderAccountId, receiverAccountId, balance);
     }
 
-    private static int createBankAccount(String userToken) {
-        return given()
-                .header("Authorization", userToken)
-                .when()
-                .post("/api/v1/accounts")
-                .then()
-                .statusCode(201)
-                .extract()
-                .path("id");
-    }
-
     private void depositMoney(String userToken, int accountId, float amount) {
         given()
                 .header("Authorization", userToken)
@@ -374,16 +337,5 @@ public class TransferMoneyTest {
                 .post("/api/v1/accounts/deposit")
                 .then()
                 .statusCode(200);
-    }
-
-    private float getAccountBalance(String userToken, int accountId) {
-        return given()
-                .header("Authorization", userToken)
-                .when()
-                .get("/api/v1/customer/accounts")
-                .then()
-                .statusCode(200)
-                .extract()
-                .path("find { it.id == %s }.balance".formatted(accountId));
     }
 }
