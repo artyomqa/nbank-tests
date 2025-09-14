@@ -1,7 +1,9 @@
 package iteration2;
 
+import generators.RandomData;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import models.CreateUserRequest;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -21,17 +23,25 @@ public class DepositMoneyTest extends BaseTest {
 
     @BeforeAll
     public static void createUsersAndAccounts() {
-        // Создание первого пользователя и получение токена
+        // Создание первого пользователя и получение токена --TODO
+        CreateUserRequest createFirstUserRequest = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .build();
+
+
+
+
         Response responseCreatedFirstUser = given()
                 .header("Authorization", adminToken)
                 .contentType(ContentType.JSON)
                 .body("""
                         {
                             "username": "Alex",
-                            "password": "pass123W!",
+                            "password": "%s",
                             "role": "USER"
                         }
-                        """)
+                        """.formatted(RandomData.getPassword()))
                 .when()
                 .post("/api/v1/admin/users")
                 .then()
