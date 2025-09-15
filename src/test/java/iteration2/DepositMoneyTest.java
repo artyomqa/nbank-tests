@@ -4,15 +4,22 @@ import generators.RandomData;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import models.CreateUserRequest;
+import models.User;
+import models.UserRole;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import requests.CreateUserRequester;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DepositMoneyTest extends BaseTest {
+    private static User firstUser;
+
     private static String firstUserToken;
     private static int firstUserId;
     private static int firstUserAccountId1;
@@ -27,27 +34,30 @@ public class DepositMoneyTest extends BaseTest {
         CreateUserRequest createFirstUserRequest = CreateUserRequest.builder()
                 .username(RandomData.getUsername())
                 .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
                 .build();
 
-
-
-
-        Response responseCreatedFirstUser = given()
-                .header("Authorization", adminToken)
-                .contentType(ContentType.JSON)
-                .body("""
-                        {
-                            "username": "Alex",
-                            "password": "%s",
-                            "role": "USER"
-                        }
-                        """.formatted(RandomData.getPassword()))
-                .when()
-                .post("/api/v1/admin/users")
-                .then()
-                .statusCode(201)
+        Response responseCreatedFirstUser = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
+                .send(createFirstUserRequest)
                 .extract()
                 .response();
+
+//        Response responseCreatedFirstUser = given()
+//                .header("Authorization", adminToken)
+//                .contentType(ContentType.JSON)
+//                .body("""
+//                        {
+//                            "username": "Alex",
+//                            "password": "%s",
+//                            "role": "USER"
+//                        }
+//                        """.formatted(RandomData.getPassword()))
+//                .when()
+//                .post("/api/v1/admin/users")
+//                .then()
+//                .statusCode(201)
+//                .extract()
+//                .response();
 
         firstUserToken = responseCreatedFirstUser.header("Authorization");
         firstUserId = responseCreatedFirstUser.jsonPath().getInt("id");
