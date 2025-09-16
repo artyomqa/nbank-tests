@@ -2,7 +2,10 @@ package iteration2;
 
 import io.restassured.RestAssured;
 import models.LoginRequest;
+import org.assertj.core.api.SoftAssertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import requests.LoginRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
@@ -10,11 +13,12 @@ import specs.ResponseSpecs;
 import static io.restassured.RestAssured.given;
 
 public class BaseTest {
+    protected SoftAssertions softly;
     protected static String adminToken;
 
-    //TODO убрать отсюда функционал получения токена админа
+    //TODO убрать отсюда функционал получения токена админа и утильные методы
     @BeforeAll
-    public static void setup() {
+    public static void globalSetup() {
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = 4111;
 
@@ -27,22 +31,16 @@ public class BaseTest {
                 .send(request)
                 .extract()
                 .header("Authorization");
+    }
 
-        // Получение токена админа
-//        adminToken = given()
-//                .contentType(ContentType.JSON)
-//                .body("""
-//                        {
-//                            "username": "admin",
-//                            "password": "admin"
-//                        }
-//                        """)
-//                .when()
-//                .post("/api/v1/auth/login")
-//                .then()
-//                .statusCode(200)
-//                .extract()
-//                .header("Authorization");
+    @BeforeEach
+    public void setupTest() {
+        softly = new SoftAssertions();
+    }
+
+    @AfterEach
+    public void afterTest() {
+        softly.assertAll();
     }
 
     protected static int createBankAccount(String userToken) {

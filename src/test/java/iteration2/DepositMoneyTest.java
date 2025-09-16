@@ -1,17 +1,11 @@
 package iteration2;
 
-import generators.RandomData;
 import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import models.CreateUserRequest;
-import models.User;
-import models.UserRole;
+import models.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.CreateBankAccountRequester;
-import requests.CreateUserRequester;
-import requests.DeleteUserRequester;
+import requests.*;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -34,112 +28,38 @@ public class DepositMoneyTest extends BaseTest {
     @BeforeAll
     public static void createUsersAndAccounts() {
         // Создание первого пользователя и получение токена
-        CreateUserRequest createFirstUserRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
+        firstUser = new User.Builder()
+                .createRandomUser()
+                .createFirstAccount()
                 .build();
 
-        Response responseCreatedFirstUser = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
-                .send(createFirstUserRequest)
-                .extract()
-                .response();
-
-//        Response responseCreatedFirstUser = given()
-//                .header("Authorization", adminToken)
-//                .contentType(ContentType.JSON)
-//                .body("""
-//                        {
-//                            "username": "Alex",
-//                            "password": "%s",
-//                            "role": "USER"
-//                        }
-//                        """.formatted(RandomData.getPassword()))
-//                .when()
-//                .post("/api/v1/admin/users")
-//                .then()
-//                .statusCode(201)
-//                .extract()
-//                .response();
-
-        firstUser = new User(responseCreatedFirstUser);
-
-        firstUserToken = responseCreatedFirstUser.header("Authorization");
-        firstUserId = responseCreatedFirstUser.jsonPath().getInt("id");
+        firstUserToken = firstUser.token();
+        firstUserId = firstUser.id();
 
         // Создание второго пользователя и получение токена
-        CreateUserRequest createSecondRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
+        secondUser = new User.Builder()
+                .createRandomUser()
+                .createFirstAccount()
                 .build();
 
-        Response responseCreatedSecondUser = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
-                .send(createSecondRequest)
-                .extract()
-                .response();
-
-//        Response responseCreatedSecondUser = given()
-//                .header("Authorization", adminToken)
-//                .contentType(ContentType.JSON)
-//                .body("""
-//                        {
-//                            "username": "Anna",
-//                            "password": "pass111X!",
-//                            "role": "USER"
-//                        }
-//                        """)
-//                .when()
-//                .post("/api/v1/admin/users")
-//                .then()
-//                .statusCode(201)
-//                .extract()
-//                .response();
-
-        secondUser = new User(responseCreatedSecondUser);
-
-        secondUserToken = responseCreatedSecondUser.header("Authorization");
-        secondUserId = responseCreatedSecondUser.jsonPath().getInt("id");
+        secondUserToken = secondUser.token();
+        secondUserId = secondUser.id();
 
         // Создание счета у первого пользователя
-        int firstUserAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsCreated())
-                .send()
-                .extract()
-                .path("id");
-
-        firstUser.setFirstAccountId(firstUserAccountId);
-
-        firstUserAccountId1 = new CreateBankAccountRequester(RequestSpecs.authWithToken(firstUserToken), ResponseSpecs.returnsCreated())
-                .send()
-                .extract()
-                .path("id");
-
-//        firstUserAccountId1 = createBankAccount(firstUserToken);
+        firstUserAccountId1 = firstUser.firstAccountId();
 
         // Создание счета у второго пользователя
-        int secondUserAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(secondUser.token()), ResponseSpecs.returnsCreated())
-                .send()
-                .extract()
-                .path("id");
-
-        secondUser.setFirstAccountId(secondUserAccountId);
-
-        secondUserAccountId1 = new CreateBankAccountRequester(RequestSpecs.authWithToken(secondUserToken), ResponseSpecs.returnsCreated())
-                .send()
-                .extract()
-                .path("id");
-
-//        secondUserAccountId1 = createBankAccount(secondUserToken);
+        secondUserAccountId1 = secondUser.firstAccountId();
     }
 
     // Удаляем юзеров после прохождения всех тестов
     @AfterAll
     public static void deleteUsers() {
         new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
-                .send(firstUserId);
+                .send(firstUser.id());
 
         new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
-                .send(secondUserId);
+                .send(secondUser.id());
 
 //        given()
 //                .header("Authorization", adminToken)
@@ -162,26 +82,45 @@ public class DepositMoneyTest extends BaseTest {
     @ValueSource(floats = {100f, 115.99f, 20.5f, 0.01f, 5000.00f})
     public void depositMoneyPositiveTest(float amount) {
         // Получаем текущий баланс пользователя
-        float currentBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
+        float currentBalance = firstUser.getFirstAccountBalance();
+
+//        float currentBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
 
         // Ожидаемый баланс после внесения депозита (округляем до 2 знаков после запятой, чтобы избежать неточностей)
         float expectedBalance = (float) Math.round((currentBalance + amount) * 100) / 100;
 
         // Пополняем баланс и проверяем, что в ответе получено корректное значение баланса
-        given()
-                .header("Authorization", firstUserToken)
-                .contentType(ContentType.JSON)
-                .body(generateRequestBody(firstUserAccountId1, amount))
-                .when()
-                .post("/api/v1/accounts/deposit")
-                .then()
-                .statusCode(200)
-                .body("id", equalTo(firstUserAccountId1))
-                .body("balance", equalTo(expectedBalance));
+        DepositMoneyRequest request = DepositMoneyRequest.builder()
+                .id(firstUser.firstAccountId())
+                .balance(amount)
+                .build();
+
+        DepositMoneyResponse response = new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsOk())
+                .send(request)
+                .extract()
+                .as(DepositMoneyResponse.class);
+
+        softly.assertThat(response.getId()).isEqualTo(request.getId());
+        softly.assertThat(response.getBalance()).isEqualTo(expectedBalance);
+
+
+//        given()
+//                .header("Authorization", firstUserToken)
+//                .contentType(ContentType.JSON)
+//                .body(generateRequestBody(firstUserAccountId1, amount))
+//                .when()
+//                .post("/api/v1/accounts/deposit")
+//                .then()
+//                .statusCode(200)
+//                .body("id", equalTo(firstUserAccountId1))
+//                .body("balance", equalTo(expectedBalance));
 
         // Проверяем, что баланс пользователя изменился
-        float actualBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
-        assertEquals(expectedBalance, actualBalance);
+        float actualBalance = firstUser.getFirstAccountBalance();
+        softly.assertThat(expectedBalance).isEqualTo(actualBalance);
+
+//        float actualBalance = getAccountBalance(firstUserToken, firstUserAccountId1);
+//        assertEquals(expectedBalance, actualBalance);
     }
 
     @ParameterizedTest
