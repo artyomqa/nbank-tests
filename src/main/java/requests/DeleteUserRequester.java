@@ -3,20 +3,18 @@ package requests;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
-import models.LoginRequest;
 
 import static io.restassured.RestAssured.given;
 
-public class LoginRequester extends Requester {
-    public LoginRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
+public class DeleteUserRequester extends Requester {
+    public DeleteUserRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
         super(requestSpecification, responseSpecification);
     }
 
-    public ValidatableResponse send(LoginRequest model) {
+    public ValidatableResponse send(int userId) {
         return given()
                 .spec(requestSpecification)
-                .body(model)
-                .post("/api/v1/auth/login")
+                .delete("/api/v1/admin/users/" + userId)
                 .then()
                 .spec(responseSpecification);
     }

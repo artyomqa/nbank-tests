@@ -7,12 +7,11 @@ import models.CreateUserRequest;
 
 import static io.restassured.RestAssured.given;
 
-public class CreateUserRequester extends Requester<CreateUserRequest> {
+public class CreateUserRequester extends Requester {
     public CreateUserRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
         super(requestSpecification, responseSpecification);
     }
 
-    @Override
     public ValidatableResponse send(CreateUserRequest model) {
         return given()
                 .spec(requestSpecification)

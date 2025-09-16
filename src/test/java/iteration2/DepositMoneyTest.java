@@ -9,7 +9,9 @@ import models.UserRole;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import requests.CreateBankAccountRequester;
 import requests.CreateUserRequester;
+import requests.DeleteUserRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -19,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DepositMoneyTest extends BaseTest {
     private static User firstUser;
+    private static User secondUser;
 
     private static String firstUserToken;
     private static int firstUserId;
@@ -30,7 +33,7 @@ public class DepositMoneyTest extends BaseTest {
 
     @BeforeAll
     public static void createUsersAndAccounts() {
-        // Создание первого пользователя и получение токена --TODO
+        // Создание первого пользователя и получение токена
         CreateUserRequest createFirstUserRequest = CreateUserRequest.builder()
                 .username(RandomData.getUsername())
                 .password(RandomData.getPassword())
@@ -59,53 +62,98 @@ public class DepositMoneyTest extends BaseTest {
 //                .extract()
 //                .response();
 
+        firstUser = new User(responseCreatedFirstUser);
+
         firstUserToken = responseCreatedFirstUser.header("Authorization");
         firstUserId = responseCreatedFirstUser.jsonPath().getInt("id");
 
         // Создание второго пользователя и получение токена
-        Response responseCreatedSecondUser = given()
-                .header("Authorization", adminToken)
-                .contentType(ContentType.JSON)
-                .body("""
-                        {
-                            "username": "Anna",
-                            "password": "pass111X!",
-                            "role": "USER"
-                        }
-                        """)
-                .when()
-                .post("/api/v1/admin/users")
-                .then()
-                .statusCode(201)
+        CreateUserRequest createSecondRequest = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
+
+        Response responseCreatedSecondUser = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
+                .send(createSecondRequest)
                 .extract()
                 .response();
+
+//        Response responseCreatedSecondUser = given()
+//                .header("Authorization", adminToken)
+//                .contentType(ContentType.JSON)
+//                .body("""
+//                        {
+//                            "username": "Anna",
+//                            "password": "pass111X!",
+//                            "role": "USER"
+//                        }
+//                        """)
+//                .when()
+//                .post("/api/v1/admin/users")
+//                .then()
+//                .statusCode(201)
+//                .extract()
+//                .response();
+
+        secondUser = new User(responseCreatedSecondUser);
 
         secondUserToken = responseCreatedSecondUser.header("Authorization");
         secondUserId = responseCreatedSecondUser.jsonPath().getInt("id");
 
         // Создание счета у первого пользователя
-        firstUserAccountId1 = createBankAccount(firstUserToken);
+        int firstUserAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsCreated())
+                .send()
+                .extract()
+                .path("id");
+
+        firstUser.setFirstAccountId(firstUserAccountId);
+
+        firstUserAccountId1 = new CreateBankAccountRequester(RequestSpecs.authWithToken(firstUserToken), ResponseSpecs.returnsCreated())
+                .send()
+                .extract()
+                .path("id");
+
+//        firstUserAccountId1 = createBankAccount(firstUserToken);
 
         // Создание счета у второго пользователя
-        secondUserAccountId1 = createBankAccount(secondUserToken);
+        int secondUserAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(secondUser.token()), ResponseSpecs.returnsCreated())
+                .send()
+                .extract()
+                .path("id");
+
+        secondUser.setFirstAccountId(secondUserAccountId);
+
+        secondUserAccountId1 = new CreateBankAccountRequester(RequestSpecs.authWithToken(secondUserToken), ResponseSpecs.returnsCreated())
+                .send()
+                .extract()
+                .path("id");
+
+//        secondUserAccountId1 = createBankAccount(secondUserToken);
     }
 
     // Удаляем юзеров после прохождения всех тестов
     @AfterAll
     public static void deleteUsers() {
-        given()
-                .header("Authorization", adminToken)
-                .when()
-                .delete("/api/v1/admin/users/" + firstUserId)
-                .then()
-                .statusCode(200);
+        new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
+                .send(firstUserId);
 
-        given()
-                .header("Authorization", adminToken)
-                .when()
-                .delete("/api/v1/admin/users/" + secondUserId)
-                .then()
-                .statusCode(200);
+        new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
+                .send(secondUserId);
+
+//        given()
+//                .header("Authorization", adminToken)
+//                .when()
+//                .delete("/api/v1/admin/users/" + firstUserId)
+//                .then()
+//                .statusCode(200);
+//
+//        given()
+//                .header("Authorization", adminToken)
+//                .when()
+//                .delete("/api/v1/admin/users/" + secondUserId)
+//                .then()
+//                .statusCode(200);
     }
 
 

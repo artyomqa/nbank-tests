@@ -23,7 +23,7 @@ public class BaseTest {
                 .password("admin")
                 .build();
 
-        adminToken = new LoginRequester(RequestSpecs.unAuth(), ResponseSpecs.returnsOk())
+        adminToken = new LoginRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsOk())
                 .send(request)
                 .extract()
                 .header("Authorization");

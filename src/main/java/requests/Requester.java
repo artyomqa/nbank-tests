@@ -1,11 +1,10 @@
 package requests;
 
-import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import models.BaseModel;
 
-public abstract class Requester<T extends BaseModel> {
+public abstract class Requester {
     protected RequestSpecification requestSpecification;
     protected ResponseSpecification responseSpecification;
 
@@ -13,6 +12,4 @@ public abstract class Requester<T extends BaseModel> {
         this.requestSpecification = requestSpecification;
         this.responseSpecification = responseSpecification;
     }
-
-    public abstract ValidatableResponse send(T model);
 }

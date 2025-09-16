@@ -15,18 +15,24 @@ public class RequestSpecs {
                 .setAccept(ContentType.JSON);
     }
 
-    public static RequestSpecification unAuth() {
+    public static RequestSpecification noAuth() {
         return defaultRequestBuilder().build();
     }
 
     public static RequestSpecification authAsAdmin() {
-        String adminToken = new LoginRequester(RequestSpecs.unAuth(), ResponseSpecs.returnsOk())
+        String adminToken = new LoginRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsOk())
                 .send(LoginRequest.builder().username("admin").password("admin").build())
                 .extract()
                 .header("Authorization");
 
         return defaultRequestBuilder()
                 .addHeader("Authorization", adminToken)
+                .build();
+    }
+
+    public static RequestSpecification authWithToken(String userToken) {
+        return defaultRequestBuilder()
+                .addHeader("Authorization", userToken)
                 .build();
     }
 }
