@@ -3,6 +3,8 @@ package specs;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 
+import static org.hamcrest.Matchers.equalTo;
+
 public class ResponseSpecs {
     private ResponseSpecs() {}
 
@@ -37,6 +39,13 @@ public class ResponseSpecs {
     public static ResponseSpecification returnsForbidden() {
         return defaultResponseBuilder()
                 .expectStatusCode(403)
+                .build();
+    }
+
+    public static ResponseSpecification successfulTransfer() {
+        return defaultResponseBuilder()
+                .expectStatusCode(200)
+                .expectBody("message", equalTo("Transfer successful"))
                 .build();
     }
 }

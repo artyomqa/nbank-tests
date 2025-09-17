@@ -52,7 +52,7 @@ public class DepositMoneyTest extends BaseTest {
         // Ожидаемый баланс после внесения депозита (округляем до 2 знаков после запятой, чтобы избежать неточностей)
         float expectedBalance = (float) Math.round((initialBalance + amount) * 100) / 100;
 
-        // Пополняем баланс и проверяем, что в ответе получено корректное значение баланса
+        // Пополняем баланс
         DepositMoneyRequest request = DepositMoneyRequest.builder()
                 .id(firstUser.firstAccountId())
                 .balance(amount)
