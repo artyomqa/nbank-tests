@@ -4,6 +4,7 @@ import generators.RandomData;
 import io.restassured.response.Response;
 import requests.CreateBankAccountRequester;
 import requests.CreateUserRequester;
+import requests.DepositMoneyRequester;
 import requests.GetBalanceRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
@@ -49,6 +50,20 @@ public class User {
                 .send()
                 .extract()
                 .path("find { it.id == %s }.balance".formatted(secondAccountId));
+    }
+
+    public void depositFirstAccount(float amount) {
+        new DepositMoneyRequester(
+                RequestSpecs.authWithToken(token),
+                ResponseSpecs.returnsOk())
+                .send(DepositMoneyRequest.builder().id(firstAccountId).balance(amount).build());
+    }
+
+    public void depositSecondAccount(float amount) {
+        new DepositMoneyRequester(
+                RequestSpecs.authWithToken(token),
+                ResponseSpecs.returnsOk())
+                .send(DepositMoneyRequest.builder().id(secondAccountId).balance(amount).build());
     }
 
     public static class Builder {

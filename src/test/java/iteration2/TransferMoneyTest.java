@@ -5,7 +5,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import requests.DeleteUserRequester;
-import requests.DepositMoneyRequester;
 import requests.GetAccountTransactionsRequester;
 import requests.TransferMoneyRequester;
 import specs.RequestSpecs;
@@ -50,12 +49,8 @@ public class TransferMoneyTest extends BaseTest {
     @ValueSource(floats = {100f, 20.5f, 115.99f, 0.01f, 10000.00f})
     public void transferBetweenOwnAccountsTest(float amount) {
         // Пополняем счет первого пользователя на 10000
-        DepositMoneyRequester depositRequester = new DepositMoneyRequester(
-                RequestSpecs.authWithToken(firstUser.token()),
-                ResponseSpecs.returnsOk());
-
         for (int i = 0; i < 2; i++) {
-            depositRequester.send(DepositMoneyRequest.builder().id(firstUser.firstAccountId()).balance(5000f).build());
+            firstUser.depositFirstAccount(5000f);
         }
 
         // Выполняем перевод
@@ -88,12 +83,8 @@ public class TransferMoneyTest extends BaseTest {
     @ValueSource(floats = {100f, 20.5f, 115.99f, 0.01f, 10000.00f})
     public void transferToAnotherUsersAccountTest(float amount) {
         // Пополняем счет первого пользователя на 10000
-        DepositMoneyRequester depositRequester = new DepositMoneyRequester(
-                RequestSpecs.authWithToken(firstUser.token()),
-                ResponseSpecs.returnsOk());
-
         for (int i = 0; i < 2; i++) {
-            depositRequester.send(DepositMoneyRequest.builder().id(firstUser.firstAccountId()).balance(5000f).build());
+            firstUser.depositFirstAccount(5000f);
         }
 
         // Выполняем перевод
@@ -125,13 +116,8 @@ public class TransferMoneyTest extends BaseTest {
     @DisplayName("Перевод невалидной суммы")
     @ValueSource(floats = {50.01f, 0, -1})
     public void transferInvalidAmountTest(float amount) {
-        // Пополняем счет пользователя
-        new DepositMoneyRequester(
-                RequestSpecs.authWithToken(firstUser.token()),
-                ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(firstUser.firstAccountId()).balance(50f).build());
+        firstUser.depositFirstAccount(50f);
 
-        // Пробуем выполнить перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
                 .receiverAccountId(secondUser.firstAccountId())
@@ -145,13 +131,8 @@ public class TransferMoneyTest extends BaseTest {
     @Test
     @DisplayName("Перевод с чужого счета")
     public void transferFromElseAccountTest() {
-        // Пополняем счет пользователя
-        new DepositMoneyRequester(
-                RequestSpecs.authWithToken(secondUser.token()),
-                ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(secondUser.firstAccountId()).balance(50f).build());
+        secondUser.depositFirstAccount(50f);
 
-        // Пробуем выполнить перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(secondUser.firstAccountId())
                 .receiverAccountId(firstUser.firstAccountId())
@@ -178,13 +159,8 @@ public class TransferMoneyTest extends BaseTest {
     @Test
     @DisplayName("Перевод на несуществующий счет")
     public void transferToInvalidAccountTest() {
-        // Пополняем счет пользователя
-        new DepositMoneyRequester(
-                RequestSpecs.authWithToken(firstUser.token()),
-                ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(firstUser.firstAccountId()).balance(50f).build());
+        firstUser.depositFirstAccount(50f);
 
-        // Пробуем выполнить перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
                 .receiverAccountId(firstUser.firstAccountId() + secondUser.firstAccountId())
@@ -199,13 +175,8 @@ public class TransferMoneyTest extends BaseTest {
     @DisplayName("Перевод на тот же самый счет")
     @Disabled("Тест временно отключен. Есть дефект.")
     public void transferToTheSameAccountTest() {
-        // Пополняем счет пользователя
-        new DepositMoneyRequester(
-                RequestSpecs.authWithToken(firstUser.token()),
-                ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(firstUser.firstAccountId()).balance(50f).build());
+        firstUser.depositFirstAccount(50f);
 
-        // Пробуем выполнить перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
                 .receiverAccountId(firstUser.firstAccountId())
@@ -219,13 +190,8 @@ public class TransferMoneyTest extends BaseTest {
     @Test
     @DisplayName("Перевод от имени администратора")
     public void transferMoneyByAdminTest() {
-        // Пополняем счет пользователя
-        new DepositMoneyRequester(
-                RequestSpecs.authWithToken(firstUser.token()),
-                ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(firstUser.firstAccountId()).balance(50f).build());
+        firstUser.depositFirstAccount(50f);
 
-        // Пробуем выполнить перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
                 .receiverAccountId(firstUser.secondAccountId())
@@ -239,13 +205,8 @@ public class TransferMoneyTest extends BaseTest {
     @Test
     @DisplayName("Перевод неавторизованным пользователем")
     public void transferMoneyByUnauthorizedUserTest() {
-        // Пополняем счет пользователя
-        new DepositMoneyRequester(
-                RequestSpecs.authWithToken(firstUser.token()),
-                ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(firstUser.firstAccountId()).balance(50f).build());
+        firstUser.depositFirstAccount(50f);
 
-        // Пробуем выполнить перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
                 .receiverAccountId(firstUser.secondAccountId())
@@ -262,10 +223,7 @@ public class TransferMoneyTest extends BaseTest {
         float transferAmount = 20.0f;
 
         // Пополняем счет пользователя
-        new DepositMoneyRequester(
-                RequestSpecs.authWithToken(firstUser.token()),
-                ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(firstUser.firstAccountId()).balance(50f).build());
+        firstUser.depositFirstAccount(50f);
 
         // Выполняем перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()

@@ -1,9 +1,6 @@
 package iteration2;
 
 import io.restassured.RestAssured;
-import io.restassured.filter.log.LogDetail;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import models.LoginRequest;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
