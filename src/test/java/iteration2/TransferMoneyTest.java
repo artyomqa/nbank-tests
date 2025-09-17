@@ -1,5 +1,6 @@
 package iteration2;
 
+import generators.RandomData;
 import models.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -131,12 +132,13 @@ public class TransferMoneyTest extends BaseTest {
     @Test
     @DisplayName("Перевод с чужого счета")
     public void transferFromElseAccountTest() {
-        secondUser.depositFirstAccount(50f);
+        float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
+        secondUser.depositFirstAccount(amount);
 
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(secondUser.firstAccountId())
                 .receiverAccountId(firstUser.firstAccountId())
-                .amount(10f)
+                .amount(amount)
                 .build();
 
         new TransferMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsForbidden())
@@ -149,7 +151,7 @@ public class TransferMoneyTest extends BaseTest {
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId() + secondUser.firstAccountId())
                 .receiverAccountId(firstUser.firstAccountId())
-                .amount(10f)
+                .amount(RandomData.getAmount(MAX_TRANSFER_AMOUNT))
                 .build();
 
         new TransferMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsForbidden())
@@ -159,12 +161,13 @@ public class TransferMoneyTest extends BaseTest {
     @Test
     @DisplayName("Перевод на несуществующий счет")
     public void transferToInvalidAccountTest() {
-        firstUser.depositFirstAccount(50f);
+        float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
+        firstUser.depositFirstAccount(amount);
 
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
                 .receiverAccountId(firstUser.firstAccountId() + secondUser.firstAccountId())
-                .amount(10f)
+                .amount(amount)
                 .build();
 
         new TransferMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsBadRequest())
@@ -175,12 +178,13 @@ public class TransferMoneyTest extends BaseTest {
     @DisplayName("Перевод на тот же самый счет")
     @Disabled("Тест временно отключен. Есть дефект.")
     public void transferToTheSameAccountTest() {
-        firstUser.depositFirstAccount(50f);
+        float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
+        firstUser.depositFirstAccount(amount);
 
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
                 .receiverAccountId(firstUser.firstAccountId())
-                .amount(10f)
+                .amount(amount)
                 .build();
 
         new TransferMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsBadRequest())
@@ -190,12 +194,13 @@ public class TransferMoneyTest extends BaseTest {
     @Test
     @DisplayName("Перевод от имени администратора")
     public void transferMoneyByAdminTest() {
-        firstUser.depositFirstAccount(50f);
+        float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
+        firstUser.depositFirstAccount(amount);
 
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
                 .receiverAccountId(firstUser.secondAccountId())
-                .amount(10f)
+                .amount(amount)
                 .build();
 
         new TransferMoneyRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
@@ -205,25 +210,27 @@ public class TransferMoneyTest extends BaseTest {
     @Test
     @DisplayName("Перевод неавторизованным пользователем")
     public void transferMoneyByUnauthorizedUserTest() {
-        firstUser.depositFirstAccount(50f);
+        float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
+        firstUser.depositFirstAccount(amount);
 
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
                 .receiverAccountId(firstUser.secondAccountId())
-                .amount(10f)
+                .amount(amount)
                 .build();
 
         new TransferMoneyRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsUnauthorized())
                 .send(request);
     }
 
+    //TODO
     @Test
     @DisplayName("Получение информации о транзакциях")
     public void getTransactionsInfoTest() {
-        float transferAmount = 20.0f;
+        float transferAmount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
 
         // Пополняем счет пользователя
-        firstUser.depositFirstAccount(50f);
+        firstUser.depositFirstAccount(MAX_DEPOSIT_AMOUNT);
 
         // Выполняем перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()

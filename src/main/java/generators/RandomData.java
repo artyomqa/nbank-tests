@@ -42,9 +42,9 @@ public class RandomData {
         return String.join("", symbols);
     }
 
-    public static float getDepositAmount() {
+    public static float getAmount(float bound) {
         Random random = new Random();
-        int randomInt = random.nextInt(5000 * 100 - 1) + 1;
+        int randomInt = random.nextInt((int) (bound * 100) - 1) + 1;
         return randomInt / 100f;
     }
 }

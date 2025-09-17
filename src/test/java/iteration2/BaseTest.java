@@ -10,13 +10,14 @@ import requests.LoginRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
-import static io.restassured.RestAssured.given;
-
 public class BaseTest {
+    protected static final float MAX_DEPOSIT_AMOUNT = 5000.00f;
+    protected static final float MAX_TRANSFER_AMOUNT = 10000.00f;
+
     protected SoftAssertions softly;
     protected static String adminToken;
 
-    //TODO убрать отсюда функционал получения токена админа и утильные методы
+    //TODO убрать отсюда функционал получения токена админа
     @BeforeAll
     public static void globalSetup() {
         RestAssured.baseURI = "http://localhost";
@@ -41,27 +42,5 @@ public class BaseTest {
     @AfterEach
     public void afterTest() {
         softly.assertAll();
-    }
-
-    protected static int createBankAccount(String userToken) {
-        return given()
-                .header("Authorization", userToken)
-                .when()
-                .post("/api/v1/accounts")
-                .then()
-                .statusCode(201)
-                .extract()
-                .path("id");
-    }
-
-    protected float getAccountBalance(String userToken, int accountId) {
-        return given()
-                .header("Authorization", userToken)
-                .when()
-                .get("/api/v1/customer/accounts")
-                .then()
-                .statusCode(200)
-                .extract()
-                .path("find { it.id == %s }.balance".formatted(accountId));
     }
 }

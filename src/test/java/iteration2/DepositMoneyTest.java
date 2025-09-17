@@ -97,7 +97,7 @@ public class DepositMoneyTest extends BaseTest {
     public void depositToAnotherAccountTest() {
         DepositMoneyRequest request = DepositMoneyRequest.builder()
                 .id(secondUser.firstAccountId())
-                .balance(RandomData.getDepositAmount())
+                .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
         new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsForbidden())
@@ -109,7 +109,7 @@ public class DepositMoneyTest extends BaseTest {
     public void depositToInvalidAccountTest() {
         DepositMoneyRequest request = DepositMoneyRequest.builder()
                 .id(firstUser.firstAccountId() + secondUser.firstAccountId())
-                .balance(RandomData.getDepositAmount())
+                .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
         new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsForbidden())
@@ -121,7 +121,7 @@ public class DepositMoneyTest extends BaseTest {
     public void depositByAdminTest() {
         DepositMoneyRequest request = DepositMoneyRequest.builder()
                 .id(firstUser.firstAccountId())
-                .balance(RandomData.getDepositAmount())
+                .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
         new DepositMoneyRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
@@ -133,7 +133,7 @@ public class DepositMoneyTest extends BaseTest {
     public void depositByUnauthorizedUserTest() {
         DepositMoneyRequest request = DepositMoneyRequest.builder()
                 .id(firstUser.firstAccountId())
-                .balance(RandomData.getDepositAmount())
+                .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
         new DepositMoneyRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsUnauthorized())
@@ -143,7 +143,7 @@ public class DepositMoneyTest extends BaseTest {
     @Test
     @DisplayName("Получение информации о депозите")
     public void getDepositInfoTest() {
-        float depositAmount = RandomData.getDepositAmount();
+        float depositAmount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
 
         // Пополняем баланс
         new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsOk())
