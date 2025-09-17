@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 public class RandomData {
-    private RandomData() {};
+    private RandomData() {}
 
     public static String getUsername() {
         return RandomStringUtils.random(10, 0, 0, true, false, null, new Random());
@@ -40,5 +40,11 @@ public class RandomData {
 
         Collections.shuffle(symbols);
         return String.join("", symbols);
+    }
+
+    public static float getDepositAmount() {
+        Random random = new Random();
+        int randomInt = random.nextInt(5000 * 100 - 1) + 1;
+        return randomInt / 100f;
     }
 }

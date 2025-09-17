@@ -7,7 +7,7 @@ import models.LoginRequest;
 import requests.LoginRequester;
 
 public class RequestSpecs {
-    private RequestSpecs() {};
+    private RequestSpecs() {}
 
     private static RequestSpecBuilder defaultRequestBuilder() {
         return new RequestSpecBuilder()
