@@ -9,6 +9,8 @@ import requests.*;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DepositMoneyTest extends BaseTest {
@@ -150,23 +152,18 @@ public class DepositMoneyTest extends BaseTest {
                 .send(DepositMoneyRequest.builder().id(firstUser.secondAccountId()).balance(depositAmount).build());
 
         // Получаем список транзакций по счету
-        Transaction[] transactions = new GetAccountTransactionsRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsOk())
+        List<Transaction> transactions = new GetAccountTransactionsRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsOk())
                 .send(firstUser.secondAccountId())
                 .extract()
-                .as(Transaction[].class);
+                .jsonPath()
+                .getList("", Transaction.class);
 
-        // Ищем нужную транзакцию
-        Transaction currentTransaction = null;
 
-        for (Transaction transaction : transactions) {
-            if (transaction.getType().equals("DEPOSIT") && transaction.getAmount() == depositAmount) {
-                currentTransaction = transaction;
-            }
-        }
-
-        // Проверяем, что депозит был найден, сумма (amount) корректная и он связан с этим счетом (relatedAccountId)
-        assertThat(currentTransaction).isNotNull();
-        softly.assertThat(depositAmount).isEqualTo(currentTransaction.getAmount());
-        softly.assertThat(firstUser.secondAccountId()).isEqualTo(currentTransaction.getRelatedAccountId());
+        // Проверяем, что в списке есть депозит на эту сумму (amount) и он связан с этим счетом (relatedAccountId)
+        softly.assertThat(transactions)
+                .anyMatch(transaction ->
+                        transaction.getType().equals("DEPOSIT") &&
+                                transaction.getAmount() == depositAmount &&
+                                transaction.getRelatedAccountId() == firstUser.secondAccountId());
     }
 }

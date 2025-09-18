@@ -5,7 +5,7 @@ import io.restassured.response.Response;
 import requests.CreateBankAccountRequester;
 import requests.CreateUserRequester;
 import requests.DepositMoneyRequester;
-import requests.GetBalanceRequester;
+import requests.GetUserAccountsRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -39,14 +39,14 @@ public class User {
     }
 
     public float getFirstAccountBalance() {
-        return new GetBalanceRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        return new GetUserAccountsRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send()
                 .extract()
                 .path("find { it.id == %s }.balance".formatted(firstAccountId));
     }
 
     public float getSecondAccountBalance() {
-        return new GetBalanceRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        return new GetUserAccountsRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send()
                 .extract()
                 .path("find { it.id == %s }.balance".formatted(secondAccountId));

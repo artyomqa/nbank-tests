@@ -6,8 +6,8 @@ import io.restassured.specification.ResponseSpecification;
 
 import static io.restassured.RestAssured.given;
 
-public class GetBalanceRequester extends Requester {
-    public GetBalanceRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
+public class GetUserAccountsRequester extends Requester {
+    public GetUserAccountsRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
         super(requestSpecification, responseSpecification);
     }
 

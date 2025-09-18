@@ -11,7 +11,7 @@ import requests.TransferMoneyRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.List;
 
 public class TransferMoneyTest extends BaseTest {
     private static User firstUser;
@@ -223,7 +223,6 @@ public class TransferMoneyTest extends BaseTest {
                 .send(request);
     }
 
-    //TODO
     @Test
     @DisplayName("Получение информации о транзакциях")
     public void getTransactionsInfoTest() {
@@ -251,34 +250,26 @@ public class TransferMoneyTest extends BaseTest {
                 RequestSpecs.authWithToken(firstUser.token()),
                 ResponseSpecs.returnsOk());
 
-        Transaction[] firstAccountTransactions = getTransactionsRequester.send(firstUser.firstAccountId())
+        List<Transaction> firstAccountTransactions = getTransactionsRequester.send(firstUser.firstAccountId())
                 .extract()
-                .as(Transaction[].class);
+                .jsonPath()
+                .getList("", Transaction.class);
 
-        Transaction transferOut = null;
+        softly.assertThat(firstAccountTransactions)
+                .anyMatch(transaction ->
+                        transaction.getType().equals("TRANSFER_OUT") &&
+                                transaction.getAmount() == transferAmount &&
+                                transaction.getRelatedAccountId() == firstUser.secondAccountId());
 
-        for (Transaction transaction : firstAccountTransactions) {
-            if (transaction.getType().equals("TRANSFER_OUT") && transaction.getAmount() == transferAmount) {
-                transferOut = transaction;
-            }
-        }
-
-        assertThat(transferOut).isNotNull();
-        softly.assertThat(transferOut.getRelatedAccountId()).isEqualTo(firstUser.secondAccountId());
-
-        Transaction[] secondAccountTransactions = getTransactionsRequester.send(firstUser.secondAccountId())
+        List<Transaction> secondAccountTransactions = getTransactionsRequester.send(firstUser.secondAccountId())
                 .extract()
-                .as(Transaction[].class);
+                .jsonPath()
+                .getList("", Transaction.class);
 
-        Transaction transferIn = null;
-
-        for (Transaction transaction : secondAccountTransactions) {
-            if (transaction.getType().equals("TRANSFER_IN") && transaction.getAmount() == transferAmount) {
-                transferIn = transaction;
-            }
-        }
-
-        assertThat(transferIn).isNotNull();
-        softly.assertThat(transferIn.getRelatedAccountId()).isEqualTo(firstUser.firstAccountId());
+        softly.assertThat(secondAccountTransactions)
+                .anyMatch(transaction ->
+                        transaction.getType().equals("TRANSFER_IN") &&
+                                transaction.getAmount() == transferAmount &&
+                                transaction.getRelatedAccountId() == firstUser.firstAccountId());
     }
 }
