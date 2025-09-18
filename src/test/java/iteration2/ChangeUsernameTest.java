@@ -1,80 +1,52 @@
 package iteration2;
 
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
+import models.ChangeNameRequest;
+import models.User;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import requests.ChangeNameRequester;
+import requests.DeleteUserRequester;
+import requests.GetUserProfileRequester;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
 public class ChangeUsernameTest extends BaseTest {
-    private static String userToken;
-    private static int userId;
+    private static User user;
 
+    // Перед запуском всех тестов создаем пользователя
     @BeforeAll
     public static void createUser() {
-        // Создание пользователя и получение токена и id
-        Response responseCreatedUser = given()
-                .header("Authorization", adminToken)
-                .contentType(ContentType.JSON)
-                .body("""
-                        {
-                            "username": "user1",
-                            "password": "pass123W!",
-                            "role": "USER"
-                        }
-                        """)
-                .when()
-                .post("/api/v1/admin/users")
-                .then()
-                .statusCode(201)
-                .extract()
-                .response();
-
-        userToken = responseCreatedUser.header("Authorization");
-        userId = responseCreatedUser.jsonPath().getInt("id");
+        user = new User.Builder()
+                .createRandomUser()
+                .build();
     }
 
     // Удаляем пользователя после прохождения тестов
     @AfterAll
     public static void deleteUser() {
-        given()
-                .header("Authorization", adminToken)
-                .when()
-                .delete("/api/v1/admin/users/" + userId)
-                .then()
-                .statusCode(200);
+        new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
+                .send(user.id());
     }
+
 
     @ParameterizedTest
     @DisplayName("Изменение имени (позитивные сценарии)")
     @ValueSource(strings = {"Petr Ivanov", "petr ivanov", "PETR IVANOV"})
     public void changeNamePositiveTest(String name) {
         // Изменяем имя
-        given()
-                .header("Authorization", userToken)
-                .contentType(ContentType.JSON)
-                .body(generateRequestBody(name))
-                .when()
-                .put("/api/v1/customer/profile")
-                .then()
-                .statusCode(200)
-                .body("customer.id", equalTo(userId))
-                .body("customer.name", equalTo(name));
+        new ChangeNameRequester(RequestSpecs.authWithToken(user.token()), ResponseSpecs.successfulChangeName(name))
+                .send(new ChangeNameRequest(name));
 
         // Проверяем, что имя обновилось
-        given()
-                .header("Authorization", userToken)
-                .when()
-                .get("/api/v1/customer/profile")
-                .then()
-                .statusCode(200)
+        new GetUserProfileRequester(RequestSpecs.authWithToken(user.token()), ResponseSpecs.returnsOk())
+                .send()
                 .body("name", equalTo(name));
     }
 
@@ -84,44 +56,19 @@ public class ChangeUsernameTest extends BaseTest {
             "Ivan_Petrovich", "Ivan-Petrovich", "Ivan Petrovich.", "Иван Иванов", "   ", ""})
     public void changeNameNegativeTest(String name) {
         // Пытаемся изменить имя
-        given()
-                .header("Authorization", userToken)
-                .contentType(ContentType.JSON)
-                .body(generateRequestBody(name))
-                .when()
-                .put("/api/v1/customer/profile")
-                .then()
-                .statusCode(400);
+        new ChangeNameRequester(RequestSpecs.authWithToken(user.token()), ResponseSpecs.returnsBadRequest())
+                .send(new ChangeNameRequest(name));
 
         // Проверяем, что имя не обновилось
-        given()
-                .header("Authorization", userToken)
-                .when()
-                .get("/api/v1/customer/profile")
-                .then()
-                .statusCode(200)
+        new GetUserProfileRequester(RequestSpecs.authWithToken(user.token()), ResponseSpecs.returnsOk())
+                .send()
                 .body("name", not(equalTo(name)));
     }
 
     @Test
     @DisplayName("Изменение имени у администратора")
     public void changeAdminName() {
-        given()
-                .header("Authorization", adminToken)
-                .contentType(ContentType.JSON)
-                .body(generateRequestBody("Petr Ivanov"))
-                .when()
-                .put("/api/v1/customer/profile")
-                .then()
-                .statusCode(403);
-    }
-
-
-    private String generateRequestBody(String name) {
-        return """
-                {
-                    "name": "%s"
-                }
-                """.formatted(name);
+        new ChangeNameRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
+                .send(new ChangeNameRequest("Petr Ivanov"));
     }
 }

@@ -48,4 +48,12 @@ public class ResponseSpecs {
                 .expectBody("message", equalTo("Transfer successful"))
                 .build();
     }
+
+    public static ResponseSpecification successfulChangeName(String newName) {
+        return defaultResponseBuilder()
+                .expectStatusCode(200)
+                .expectBody("customer.name", equalTo(newName))
+                .expectBody("message", equalTo("Profile updated successfully"))
+                .build();
+    }
 }
