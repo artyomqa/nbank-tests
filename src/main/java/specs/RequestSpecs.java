@@ -7,6 +7,8 @@ import models.LoginRequest;
 import requests.LoginRequester;
 
 public class RequestSpecs {
+    private static String adminToken;
+
     private RequestSpecs() {}
 
     private static RequestSpecBuilder defaultRequestBuilder() {
@@ -20,10 +22,12 @@ public class RequestSpecs {
     }
 
     public static RequestSpecification authAsAdmin() {
-        String adminToken = new LoginRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsOk())
-                .send(LoginRequest.builder().username("admin").password("admin").build())
-                .extract()
-                .header("Authorization");
+        if (adminToken == null) {
+            adminToken = new LoginRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsOk())
+                    .send(LoginRequest.builder().username("admin").password("admin").build())
+                    .extract()
+                    .header("Authorization");
+        }
 
         return defaultRequestBuilder()
                 .addHeader("Authorization", adminToken)
