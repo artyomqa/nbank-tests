@@ -21,14 +21,10 @@ public class Requester {
     // перегружаем его
     public ValidatableResponse send(BaseModel model) {
         return given()
-                .log().uri()
-                .log().body()
                 .spec(requestSpecification)
                 .body(model)
                 .request(endpoint.getMethod(), endpoint.getUrl())
                 .then()
-                .log().status()
-                .log().body()
                 .spec(responseSpecification);
     }
 }

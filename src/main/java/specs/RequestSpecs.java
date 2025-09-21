@@ -5,6 +5,7 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import models.LoginRequest;
 import requests.LoginRequester;
+import utils.HttpLoggingFilter;
 
 public class RequestSpecs {
     private static String adminToken;
@@ -14,7 +15,8 @@ public class RequestSpecs {
     private static RequestSpecBuilder defaultRequestBuilder() {
         return new RequestSpecBuilder()
                 .setContentType(ContentType.JSON)
-                .setAccept(ContentType.JSON);
+                .setAccept(ContentType.JSON)
+                .addFilter(new HttpLoggingFilter());
     }
 
     public static RequestSpecification noAuth() {
