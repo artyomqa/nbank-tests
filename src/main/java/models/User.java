@@ -1,11 +1,14 @@
 package models;
 
 import generators.RandomData;
+import generators.RandomModel;
 import io.restassured.response.Response;
 import requests.CreateBankAccountRequester;
 import requests.CreateUserRequester;
 import requests.DepositMoneyRequester;
 import requests.GetUserAccountsRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.Requester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -73,16 +76,21 @@ public class User {
         private int secondAccountId;
 
         public Builder crateUser(String username, String password) {
-            CreateUserRequest request = CreateUserRequest.builder()
-                    .username(username)
-                    .password(password)
-                    .role(UserRole.USER.toString())
-                    .build();
+            CreateUserRequest request = new CreateUserRequest(username, password, UserRole.USER.toString());
+//            CreateUserRequest request = CreateUserRequest.builder()
+//                    .username(username)
+//                    .password(password)
+//                    .role(UserRole.USER.toString())
+//                    .build();
 
-            Response response = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
+            Response response = new Requester(Endpoint.CREATE_USER, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
                     .send(request)
                     .extract()
                     .response();
+//            Response response = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
+//                    .send(request)
+//                    .extract()
+//                    .response();
 
             token = response.header("Authorization");
             id = response.jsonPath().getInt("id");
@@ -91,16 +99,21 @@ public class User {
         }
 
         public Builder createRandomUser() {
-            CreateUserRequest request = CreateUserRequest.builder()
-                    .username(RandomData.getUsername())
-                    .password(RandomData.getPassword())
-                    .role(UserRole.USER.toString())
-                    .build();
+            CreateUserRequest request = RandomModel.generate(CreateUserRequest.class);
+//            CreateUserRequest request = CreateUserRequest.builder()
+//                    .username(RandomData.getUsername())
+//                    .password(RandomData.getPassword())
+//                    .role(UserRole.USER.toString())
+//                    .build();
 
-            Response response = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
+            Response response = new Requester(Endpoint.CREATE_USER, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
                     .send(request)
                     .extract()
                     .response();
+//            Response response = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
+//                    .send(request)
+//                    .extract()
+//                    .response();
 
             token = response.header("Authorization");
             id = response.jsonPath().getInt("id");
@@ -109,19 +122,27 @@ public class User {
         }
 
         public Builder createFirstAccount() {
-            firstAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
+            firstAccountId = new Requester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
                     .send()
                     .extract()
                     .path("id");
+//            firstAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
+//                    .send()
+//                    .extract()
+//                    .path("id");
 
             return this;
         }
 
         public Builder createSecondAccount() {
-            secondAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
+            secondAccountId = new Requester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
                     .send()
                     .extract()
                     .path("id");
+//            secondAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
+//                    .send()
+//                    .extract()
+//                    .path("id");
 
             return this;
         }

@@ -4,12 +4,15 @@ import io.restassured.http.Method;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import models.BaseModel;
+import models.CreateBankAccountResponse;
 import models.CreateUserRequest;
+import models.CreateUserResponse;
 
 @AllArgsConstructor
 @Getter
 public enum Endpoint {
-    CREATE_USER(Method.POST, "/api/v1/admin/users", CreateUserRequest.class, null);
+    CREATE_USER(Method.POST, "/api/v1/admin/users", CreateUserRequest.class, CreateUserResponse.class),
+    CREATE_BANK_ACCOUNT(Method.POST, "/api/v1/accounts", null, CreateBankAccountResponse.class);
 
     private final Method method;
     private final String url;

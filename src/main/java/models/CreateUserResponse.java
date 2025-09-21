@@ -11,9 +11,11 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-public class DepositMoneyResponse extends BaseModel {
+public class CreateUserResponse extends BaseModel {
     private int id;
-    private String accountNumber;
-    private float balance;
-    private List<Transaction> transactions;
+    private String username;
+    private String password;
+    private String name;
+    private String role;
+    private List<BankAccount> accounts;
 }

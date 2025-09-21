@@ -18,7 +18,14 @@ public class Requester {
         this.responseSpecification = responseSpecification;
     }
 
-    // перегружаем его
+    public ValidatableResponse send() {
+        return given()
+                .spec(requestSpecification)
+                .request(endpoint.getMethod(), endpoint.getUrl())
+                .then()
+                .spec(responseSpecification);
+    }
+
     public ValidatableResponse send(BaseModel model) {
         return given()
                 .spec(requestSpecification)

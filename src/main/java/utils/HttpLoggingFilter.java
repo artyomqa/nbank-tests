@@ -26,7 +26,7 @@ public class HttpLoggingFilter implements Filter {
 
         Response response = context.next(requestSpec, responseSpec);
 
-        System.out.println("⬅\uFE0F [RESPONSE] " + response.getStatusLine() + " " + response.getBody().asPrettyString() + "\n");
+        System.out.println("⬅\uFE0F [RESPONSE] " + response.getStatusLine() + "\n" + response.getBody().asPrettyString() + "\n\n");
 
         return response;
     }
