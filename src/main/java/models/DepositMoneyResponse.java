@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-
+//TODO корректнее использовать models -> BankAccount
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor

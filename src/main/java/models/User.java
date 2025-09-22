@@ -1,12 +1,7 @@
 package models;
 
-import generators.RandomData;
 import generators.RandomModel;
 import io.restassured.response.Response;
-import requests.CreateBankAccountRequester;
-import requests.CreateUserRequester;
-import requests.DepositMoneyRequester;
-import requests.GetUserAccountsRequester;
 import requests.skelethon.Endpoint;
 import requests.skelethon.Requester;
 import specs.RequestSpecs;
@@ -42,31 +37,27 @@ public class User {
     }
 
     public float getFirstAccountBalance() {
-        return new GetUserAccountsRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        return new Requester(Endpoint.GET_USER_ACCOUNTS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send()
                 .extract()
                 .path("find { it.id == %s }.balance".formatted(firstAccountId));
     }
 
     public float getSecondAccountBalance() {
-        return new GetUserAccountsRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        return new Requester(Endpoint.GET_USER_ACCOUNTS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send()
                 .extract()
                 .path("find { it.id == %s }.balance".formatted(secondAccountId));
     }
 
     public void depositFirstAccount(float amount) {
-        new DepositMoneyRequester(
-                RequestSpecs.authWithToken(token),
-                ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(firstAccountId).balance(amount).build());
+        new Requester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+                .send(new DepositMoneyRequest(firstAccountId, amount));
     }
 
     public void depositSecondAccount(float amount) {
-        new DepositMoneyRequester(
-                RequestSpecs.authWithToken(token),
-                ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(secondAccountId).balance(amount).build());
+        new Requester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+                .send(new DepositMoneyRequest(secondAccountId, amount));
     }
 
     public static class Builder {
@@ -77,20 +68,11 @@ public class User {
 
         public Builder crateUser(String username, String password) {
             CreateUserRequest request = new CreateUserRequest(username, password, UserRole.USER.toString());
-//            CreateUserRequest request = CreateUserRequest.builder()
-//                    .username(username)
-//                    .password(password)
-//                    .role(UserRole.USER.toString())
-//                    .build();
 
             Response response = new Requester(Endpoint.CREATE_USER, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
                     .send(request)
                     .extract()
                     .response();
-//            Response response = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
-//                    .send(request)
-//                    .extract()
-//                    .response();
 
             token = response.header("Authorization");
             id = response.jsonPath().getInt("id");
@@ -100,20 +82,11 @@ public class User {
 
         public Builder createRandomUser() {
             CreateUserRequest request = RandomModel.generate(CreateUserRequest.class);
-//            CreateUserRequest request = CreateUserRequest.builder()
-//                    .username(RandomData.getUsername())
-//                    .password(RandomData.getPassword())
-//                    .role(UserRole.USER.toString())
-//                    .build();
 
             Response response = new Requester(Endpoint.CREATE_USER, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
                     .send(request)
                     .extract()
                     .response();
-//            Response response = new CreateUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
-//                    .send(request)
-//                    .extract()
-//                    .response();
 
             token = response.header("Authorization");
             id = response.jsonPath().getInt("id");
@@ -126,10 +99,6 @@ public class User {
                     .send()
                     .extract()
                     .path("id");
-//            firstAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
-//                    .send()
-//                    .extract()
-//                    .path("id");
 
             return this;
         }
@@ -139,10 +108,6 @@ public class User {
                     .send()
                     .extract()
                     .path("id");
-//            secondAccountId = new CreateBankAccountRequester(RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
-//                    .send()
-//                    .extract()
-//                    .path("id");
 
             return this;
         }
