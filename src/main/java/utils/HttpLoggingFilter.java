@@ -10,7 +10,7 @@ import io.restassured.specification.FilterableResponseSpecification;
 public class HttpLoggingFilter implements Filter {
     @Override
     public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext context) {
-        System.out.println("➡\uFE0F [REQUEST] " + requestSpec.getMethod() + " " + requestSpec.getURI());
+        System.out.println("➡️ [REQUEST] " + requestSpec.getMethod() + " " + requestSpec.getURI());
 
         String requestBody = requestSpec.getBody();
         if (requestBody != null && !requestBody.isEmpty()) {
@@ -26,7 +26,7 @@ public class HttpLoggingFilter implements Filter {
 
         Response response = context.next(requestSpec, responseSpec);
 
-        System.out.println("⬅\uFE0F [RESPONSE] " + response.getStatusLine() + "\n" + response.getBody().asPrettyString() + "\n\n");
+        System.out.println("⬅️ [RESPONSE] " + response.getStatusLine() + "\n" + response.getBody().asPrettyString() + "\n\n");
 
         return response;
     }

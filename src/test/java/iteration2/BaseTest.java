@@ -1,5 +1,6 @@
 package iteration2;
 
+import configs.Config;
 import io.restassured.RestAssured;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
@@ -14,8 +15,8 @@ public class BaseTest {
 
     @BeforeAll
     public static void globalSetup() {
-        RestAssured.baseURI = "http://localhost";
-        RestAssured.port = 4111;
+        RestAssured.baseURI = Config.getString("host");
+        RestAssured.port = Config.getInt("port");
     }
 
     @BeforeEach

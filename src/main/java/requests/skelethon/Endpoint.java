@@ -11,8 +11,8 @@ import models.CreateUserResponse;
 @AllArgsConstructor
 @Getter
 public enum Endpoint {
-    CREATE_USER(Method.POST, "/api/v1/admin/users", CreateUserRequest.class, CreateUserResponse.class),
-    CREATE_BANK_ACCOUNT(Method.POST, "/api/v1/accounts", null, CreateBankAccountResponse.class);
+    CREATE_USER(Method.POST, "/admin/users", CreateUserRequest.class, CreateUserResponse.class),
+    CREATE_BANK_ACCOUNT(Method.POST, "/accounts", null, CreateBankAccountResponse.class);
 
     private final Method method;
     private final String url;
