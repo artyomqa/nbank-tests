@@ -1,5 +1,6 @@
 package iteration2;
 
+import utils.TestUtils;
 import generators.RandomData;
 import models.*;
 import org.junit.jupiter.api.*;
@@ -52,7 +53,7 @@ public class DepositMoneyTest extends BaseTest {
         float initialBalance = firstUser.getFirstAccountBalance();
 
         // Ожидаемый баланс после внесения депозита (округляем до 2 знаков после запятой, чтобы избежать неточностей)
-        float expectedBalance = (float) Math.round((initialBalance + amount) * 100) / 100;
+        float expectedBalance = TestUtils.getCorrectAmount(initialBalance + amount);
 
         // Пополняем баланс
         DepositMoneyRequest request = DepositMoneyRequest.builder()
@@ -97,6 +98,10 @@ public class DepositMoneyTest extends BaseTest {
     @Test
     @DisplayName("Пополнение чужого баланса")
     public void depositToAnotherAccountTest() {
+        // Получаем текущий баланс другого пользователя
+        float initialBalance = secondUser.getFirstAccountBalance();
+
+        // Пытаемся пополнить баланс другого пользователя
         DepositMoneyRequest request = DepositMoneyRequest.builder()
                 .id(secondUser.firstAccountId())
                 .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
@@ -104,11 +109,15 @@ public class DepositMoneyTest extends BaseTest {
 
         new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsForbidden())
                 .send(request);
+
+        // Проверяем, что баланс пользователя не изменился
+        float actualBalance = secondUser.getFirstAccountBalance();
+        assertThat(actualBalance).isEqualTo(initialBalance);
     }
 
     @Test
     @DisplayName("Пополнение баланса на несуществующем id счета")
-    public void depositToInvalidAccountTest() {
+    public void userCannotDepositInvalidAccountTest() {
         DepositMoneyRequest request = DepositMoneyRequest.builder()
                 .id(firstUser.firstAccountId() + secondUser.firstAccountId())
                 .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
@@ -120,7 +129,10 @@ public class DepositMoneyTest extends BaseTest {
 
     @Test
     @DisplayName("Пополнение баланса от имени администратора")
-    public void depositByAdminTest() {
+    public void adminCannotDepositTest() {
+        // Получаем текущий баланс пользователя
+        float initialBalance = firstUser.getFirstAccountBalance();
+
         DepositMoneyRequest request = DepositMoneyRequest.builder()
                 .id(firstUser.firstAccountId())
                 .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
@@ -128,11 +140,18 @@ public class DepositMoneyTest extends BaseTest {
 
         new DepositMoneyRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
                 .send(request);
+
+        // Проверяем, что баланс пользователя не изменился
+        float actualBalance = firstUser.getFirstAccountBalance();
+        assertThat(actualBalance).isEqualTo(initialBalance);
     }
 
     @Test
     @DisplayName("Пополнение баланса неавторизованным пользователем")
-    public void depositByUnauthorizedUserTest() {
+    public void unauthorizedUserCannotDepositTest() {
+        // Получаем текущий баланс пользователя
+        float initialBalance = firstUser.getFirstAccountBalance();
+
         DepositMoneyRequest request = DepositMoneyRequest.builder()
                 .id(firstUser.firstAccountId())
                 .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
@@ -140,6 +159,10 @@ public class DepositMoneyTest extends BaseTest {
 
         new DepositMoneyRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsUnauthorized())
                 .send(request);
+
+        // Проверяем, что баланс пользователя не изменился
+        float actualBalance = firstUser.getFirstAccountBalance();
+        assertThat(actualBalance).isEqualTo(initialBalance);
     }
 
     @Test
@@ -149,7 +172,7 @@ public class DepositMoneyTest extends BaseTest {
 
         // Пополняем баланс
         new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsOk())
-                .send(DepositMoneyRequest.builder().id(firstUser.secondAccountId()).balance(depositAmount).build());
+                .send(new DepositMoneyRequest(firstUser.secondAccountId(), depositAmount));
 
         // Получаем список транзакций по счету
         List<Transaction> transactions = new GetAccountTransactionsRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsOk())

@@ -1,5 +1,6 @@
 package iteration2;
 
+import utils.TestUtils;
 import generators.RandomData;
 import models.*;
 import org.junit.jupiter.api.*;
@@ -12,6 +13,8 @@ import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransferMoneyTest extends BaseTest {
     private static User firstUser;
@@ -50,9 +53,7 @@ public class TransferMoneyTest extends BaseTest {
     @ValueSource(floats = {100f, 20.5f, 115.99f, 0.01f, 10000.00f})
     public void transferBetweenOwnAccountsTest(float amount) {
         // Пополняем счет первого пользователя на 10000
-        for (int i = 0; i < 2; i++) {
-            firstUser.depositFirstAccount(5000f);
-        }
+        firstUser.depositFirstAccount(5000f, 2);
 
         // Выполняем перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()
@@ -73,7 +74,7 @@ public class TransferMoneyTest extends BaseTest {
         softly.assertThat(response.getReceiverAccountId()).isEqualTo(request.getReceiverAccountId());
 
         // Ожидаемый баланс счета-отправителя (округляем до 2 знаков после запятой, чтобы избежать неточностей)
-        float senderExpectedBalance = (float) Math.round((10000f - amount) * 100) / 100;
+        float senderExpectedBalance = TestUtils.getCorrectAmount(10000f - amount);
 
         softly.assertThat(firstUser.getFirstAccountBalance()).isEqualTo(senderExpectedBalance);
         softly.assertThat(firstUser.getSecondAccountBalance()).isEqualTo(amount);
@@ -84,9 +85,7 @@ public class TransferMoneyTest extends BaseTest {
     @ValueSource(floats = {100f, 20.5f, 115.99f, 0.01f, 10000.00f})
     public void transferToAnotherUsersAccountTest(float amount) {
         // Пополняем счет первого пользователя на 10000
-        for (int i = 0; i < 2; i++) {
-            firstUser.depositFirstAccount(5000f);
-        }
+        firstUser.depositFirstAccount(5000f, 2);
 
         // Выполняем перевод
         TransferMoneyRequest request = TransferMoneyRequest.builder()
@@ -107,7 +106,7 @@ public class TransferMoneyTest extends BaseTest {
         softly.assertThat(response.getReceiverAccountId()).isEqualTo(request.getReceiverAccountId());
 
         // Ожидаемый баланс счета-отправителя (округляем до 2 знаков после запятой, чтобы избежать неточностей)
-        float senderExpectedBalance = (float) Math.round((10000f - amount) * 100) / 100;
+        float senderExpectedBalance = TestUtils.getCorrectAmount(10000f - amount);
 
         softly.assertThat(firstUser.getFirstAccountBalance()).isEqualTo(senderExpectedBalance);
         softly.assertThat(secondUser.getFirstAccountBalance()).isEqualTo(amount);
@@ -117,7 +116,8 @@ public class TransferMoneyTest extends BaseTest {
     @DisplayName("Перевод невалидной суммы")
     @ValueSource(floats = {50.01f, 0, -1})
     public void transferInvalidAmountTest(float amount) {
-        firstUser.depositFirstAccount(50f);
+        float initialBalance = 50f;
+        firstUser.depositFirstAccount(initialBalance);
 
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId())
@@ -127,11 +127,15 @@ public class TransferMoneyTest extends BaseTest {
 
         new TransferMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsBadRequest())
                 .send(request);
+
+        // Проверяем, что балансы пользователей не изменились
+        assertThat(firstUser.getFirstAccountBalance()).isEqualTo(initialBalance);
+        assertThat(secondUser.getFirstAccountBalance()).isEqualTo(0);
     }
 
     @Test
     @DisplayName("Перевод с чужого счета")
-    public void transferFromElseAccountTest() {
+    public void userCannotTransferFromElseAccountTest() {
         float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
         secondUser.depositFirstAccount(amount);
 
@@ -143,11 +147,15 @@ public class TransferMoneyTest extends BaseTest {
 
         new TransferMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsForbidden())
                 .send(request);
+
+        // Проверяем, что балансы пользователей не изменились
+        assertThat(secondUser.getFirstAccountBalance()).isEqualTo(amount);
+        assertThat(firstUser.getFirstAccountBalance()).isEqualTo(0);
     }
 
     @Test
     @DisplayName("Перевод с несуществующего счета")
-    public void transferFromInvalidAccountTest() {
+    public void userCannotTransferFromInvalidAccountTest() {
         TransferMoneyRequest request = TransferMoneyRequest.builder()
                 .senderAccountId(firstUser.firstAccountId() + secondUser.firstAccountId())
                 .receiverAccountId(firstUser.firstAccountId())
@@ -156,11 +164,14 @@ public class TransferMoneyTest extends BaseTest {
 
         new TransferMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsForbidden())
                 .send(request);
+
+        // Проверяем, что баланс получателя не изменился
+        assertThat(firstUser.getFirstAccountBalance()).isEqualTo(0);
     }
 
     @Test
     @DisplayName("Перевод на несуществующий счет")
-    public void transferToInvalidAccountTest() {
+    public void userCannotTransferToInvalidAccountTest() {
         float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
         firstUser.depositFirstAccount(amount);
 
@@ -172,12 +183,15 @@ public class TransferMoneyTest extends BaseTest {
 
         new TransferMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsBadRequest())
                 .send(request);
+
+        // Проверяем, что баланс отправителя не изменился
+        assertThat(firstUser.getFirstAccountBalance()).isEqualTo(amount);
     }
 
     @Test
     @DisplayName("Перевод на тот же самый счет")
     @Disabled("Тест временно отключен. Есть дефект.")
-    public void transferToTheSameAccountTest() {
+    public void userCannotTransferToTheSameAccountTest() {
         float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
         firstUser.depositFirstAccount(amount);
 
@@ -189,11 +203,14 @@ public class TransferMoneyTest extends BaseTest {
 
         new TransferMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsBadRequest())
                 .send(request);
+
+        // Проверяем, что баланс пользователя не изменился
+        assertThat(firstUser.getFirstAccountBalance()).isEqualTo(amount);
     }
 
     @Test
     @DisplayName("Перевод от имени администратора")
-    public void transferMoneyByAdminTest() {
+    public void adminCannotTransferTest() {
         float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
         firstUser.depositFirstAccount(amount);
 
@@ -205,11 +222,15 @@ public class TransferMoneyTest extends BaseTest {
 
         new TransferMoneyRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
                 .send(request);
+
+        // Проверяем, что балансы пользователя не изменилсь
+        assertThat(firstUser.getFirstAccountBalance()).isEqualTo(amount);
+        assertThat(firstUser.getSecondAccountBalance()).isEqualTo(0);
     }
 
     @Test
     @DisplayName("Перевод неавторизованным пользователем")
-    public void transferMoneyByUnauthorizedUserTest() {
+    public void unauthorizedUserCannotTransferTest() {
         float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
         firstUser.depositFirstAccount(amount);
 
@@ -221,6 +242,10 @@ public class TransferMoneyTest extends BaseTest {
 
         new TransferMoneyRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsUnauthorized())
                 .send(request);
+
+        // Проверяем, что балансы пользователя не изменилсь
+        assertThat(firstUser.getFirstAccountBalance()).isEqualTo(amount);
+        assertThat(firstUser.getSecondAccountBalance()).isEqualTo(0);
     }
 
     @Test

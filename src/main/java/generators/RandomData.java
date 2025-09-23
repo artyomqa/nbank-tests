@@ -14,6 +14,10 @@ public class RandomData {
         return RandomStringUtils.random(10, 0, 0, true, false, null, new Random());
     }
 
+    public static String getName() {
+        return getUsername() + " " + getUsername();
+    }
+
     public static String getPassword() {
         List<String> symbols = new ArrayList<>();
         String[] allowedSpecialSymbols = new String[]{"!", "@", "#", "$", "%", "^", "&", "=", "+"};
