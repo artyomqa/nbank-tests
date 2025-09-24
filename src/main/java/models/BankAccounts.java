@@ -6,19 +6,21 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
-public class UserBankAccounts extends BaseModel {
-    private BankAccount[] accounts;
+public class BankAccounts extends BaseModel {
+    private List<BankAccount> accounts;
 
     @JsonCreator
-    public UserBankAccounts(BankAccount[] accounts) {
+    public BankAccounts(List<BankAccount> accounts) {
         this.accounts = accounts;
     }
 
     @JsonValue
-    public BankAccount[] getAccounts() {
+    public List<BankAccount> getAccounts() {
         return accounts;
     }
 }

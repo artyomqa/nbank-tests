@@ -8,9 +8,9 @@ import models.*;
 @AllArgsConstructor
 @Getter
 public enum Endpoint {
-    CREATE_USER(Method.POST, "/admin/users", CreateUserRequest.class, CreateUserResponse.class),
-    CREATE_BANK_ACCOUNT(Method.POST, "/accounts", null, CreateBankAccountResponse.class),
-    GET_USER_ACCOUNTS(Method.GET, "/customer/accounts", null, UserBankAccounts.class),
+    CREATE_USER(Method.POST, "/admin/users", CreateUserRequest.class, UserProfile.class),
+    CREATE_BANK_ACCOUNT(Method.POST, "/accounts", null, BankAccount.class),
+    GET_USER_ACCOUNTS(Method.GET, "/customer/accounts", null, BankAccounts.class),
     DEPOSIT_MONEY(Method.POST, "/accounts/deposit", DepositMoneyRequest.class, BankAccount.class);
 
     private final Method method;

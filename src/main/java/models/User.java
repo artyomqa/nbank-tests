@@ -7,6 +7,8 @@ import requests.skelethon.Requester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
+import java.util.List;
+
 public class User {
     private final String token;
     private final int id;
@@ -37,17 +39,35 @@ public class User {
     }
 
     public float getFirstAccountBalance() {
-        return new Requester(Endpoint.GET_USER_ACCOUNTS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        List<BankAccount> userAccounts = new Requester(Endpoint.GET_USER_ACCOUNTS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send()
                 .extract()
-                .path("find { it.id == %s }.balance".formatted(firstAccountId));
+                .as(BankAccounts.class)
+                .getAccounts();
+
+        for (BankAccount account : userAccounts) {
+            if (account.getId() == firstAccountId) {
+                return account.getBalance();
+            }
+        }
+
+        throw new AssertionError("Ошибка при получении баланса. Счет с id = " + firstAccountId + " не найден.");
     }
 
     public float getSecondAccountBalance() {
-        return new Requester(Endpoint.GET_USER_ACCOUNTS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        List<BankAccount> userAccounts = new Requester(Endpoint.GET_USER_ACCOUNTS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send()
                 .extract()
-                .path("find { it.id == %s }.balance".formatted(secondAccountId));
+                .as(BankAccounts.class)
+                .getAccounts();
+
+        for (BankAccount account : userAccounts) {
+            if (account.getId() == secondAccountId) {
+                return account.getBalance();
+            }
+        }
+
+        throw new AssertionError("Ошибка при получении баланса. Счет с id = " + secondAccountId + " не найден.");
     }
 
     public void depositFirstAccount(float amount) {
@@ -55,9 +75,25 @@ public class User {
                 .send(new DepositMoneyRequest(firstAccountId, amount));
     }
 
+    public void depositFirstAccount(float amount, int repeat) {
+        Requester requester = new Requester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
+
+        for (int i = 0; i < repeat; i++) {
+            requester.send(new DepositMoneyRequest(firstAccountId, amount));
+        }
+    }
+
     public void depositSecondAccount(float amount) {
         new Requester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send(new DepositMoneyRequest(secondAccountId, amount));
+    }
+
+    public void depositSecondAccount(float amount, int repeat) {
+        Requester requester = new Requester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
+
+        for (int i = 0; i < repeat; i++) {
+            requester.send(new DepositMoneyRequest(secondAccountId, amount));
+        }
     }
 
     public static class Builder {
@@ -98,7 +134,8 @@ public class User {
             firstAccountId = new Requester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
                     .send()
                     .extract()
-                    .path("id");
+                    .as(BankAccount.class)
+                    .getId();
 
             return this;
         }
@@ -107,7 +144,8 @@ public class User {
             secondAccountId = new Requester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
                     .send()
                     .extract()
-                    .path("id");
+                    .as(BankAccount.class)
+                    .getId();
 
             return this;
         }

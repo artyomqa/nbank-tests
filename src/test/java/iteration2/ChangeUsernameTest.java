@@ -1,7 +1,9 @@
 package iteration2;
 
+import generators.RandomData;
 import models.ChangeNameRequest;
 import models.User;
+import models.UserProfile;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -14,8 +16,7 @@ import requests.GetUserProfileRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChangeUsernameTest extends BaseTest {
     private static User user;
@@ -45,9 +46,12 @@ public class ChangeUsernameTest extends BaseTest {
                 .send(new ChangeNameRequest(name));
 
         // Проверяем, что имя обновилось
-        new GetUserProfileRequester(RequestSpecs.authWithToken(user.token()), ResponseSpecs.returnsOk())
+        UserProfile response = new GetUserProfileRequester(RequestSpecs.authWithToken(user.token()), ResponseSpecs.returnsOk())
                 .send()
-                .body("name", equalTo(name));
+                .extract()
+                .as(UserProfile.class);
+
+        assertThat(response.getName()).isEqualTo(name);
     }
 
     @ParameterizedTest
@@ -60,15 +64,18 @@ public class ChangeUsernameTest extends BaseTest {
                 .send(new ChangeNameRequest(name));
 
         // Проверяем, что имя не обновилось
-        new GetUserProfileRequester(RequestSpecs.authWithToken(user.token()), ResponseSpecs.returnsOk())
+        UserProfile response = new GetUserProfileRequester(RequestSpecs.authWithToken(user.token()), ResponseSpecs.returnsOk())
                 .send()
-                .body("name", not(equalTo(name)));
+                .extract()
+                .as(UserProfile.class);
+
+        assertThat(response.getName()).isNotEqualTo(name);
     }
 
     @Test
     @DisplayName("Изменение имени у администратора")
-    public void changeAdminName() {
+    public void adminCannotChangeNameTest() {
         new ChangeNameRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
-                .send(new ChangeNameRequest("Petr Ivanov"));
+                .send(new ChangeNameRequest(RandomData.getName()));
     }
 }

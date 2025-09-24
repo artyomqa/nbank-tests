@@ -11,7 +11,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserResponse extends BaseModel {
+public class UserProfile extends BaseModel {
     private int id;
     private String username;
     private String password;

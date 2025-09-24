@@ -8,16 +8,21 @@ import java.util.List;
 import java.util.Random;
 
 public class RandomData {
+    private static final Random random = new Random();
+
     private RandomData() {}
 
     public static String getUsername() {
-        return RandomStringUtils.random(10, 0, 0, true, false, null, new Random());
+        return RandomStringUtils.random(10, 0, 0, true, false, null, random);
+    }
+
+    public static String getName() {
+        return getUsername() + " " + getUsername();
     }
 
     public static String getPassword() {
         List<String> symbols = new ArrayList<>();
         String[] allowedSpecialSymbols = new String[]{"!", "@", "#", "$", "%", "^", "&", "=", "+"};
-        Random random = new Random();
         int passwordLength = random.nextInt(23) + 8;
 
         for (int i = 0; i < passwordLength; i++) {
@@ -43,7 +48,6 @@ public class RandomData {
     }
 
     public static float getAmount(float bound) {
-        Random random = new Random();
         int randomInt = random.nextInt((int) (bound * 100) - 1) + 1;
         return randomInt / 100f;
     }

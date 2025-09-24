@@ -1,15 +1,13 @@
 package models;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import utils.annotations.GeneratePattern;
 
 @Data
-@Builder
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CreateUserRequest extends BaseModel {
     @GeneratePattern(regex = "[a-zA-Z0-9._-]{3,15}")
     private String username;
