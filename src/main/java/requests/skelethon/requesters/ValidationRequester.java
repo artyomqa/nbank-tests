@@ -1,23 +1,16 @@
-package requests.skelethon;
+package requests.skelethon.requesters;
 
-import configs.Config;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import models.BaseModel;
+import requests.skelethon.Endpoint;
 
 import static io.restassured.RestAssured.given;
 
-public class Requester {
-    private final Endpoint endpoint;
-    private final RequestSpecification requestSpecification;
-    private final ResponseSpecification responseSpecification;
-    private final String apiVersion = Config.getString("apiVersion");
-
-    public Requester(Endpoint endpoint, RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
-        this.endpoint = endpoint;
-        this.requestSpecification = requestSpecification;
-        this.responseSpecification = responseSpecification;
+public class ValidationRequester extends Requester {
+    public ValidationRequester(Endpoint endpoint, RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
+        super(endpoint, requestSpecification, responseSpecification);
     }
 
     public ValidatableResponse send() {

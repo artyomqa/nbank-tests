@@ -3,7 +3,8 @@ package models;
 import generators.RandomModel;
 import io.restassured.response.Response;
 import requests.skelethon.Endpoint;
-import requests.skelethon.Requester;
+import requests.skelethon.requesters.ModelRequester;
+import requests.skelethon.requesters.ValidationRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -39,10 +40,11 @@ public class User {
     }
 
     public float getFirstAccountBalance() {
-        List<BankAccount> userAccounts = new Requester(Endpoint.GET_USER_ACCOUNTS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        List<BankAccount> userAccounts = new ModelRequester<BankAccounts>(
+                Endpoint.GET_USER_ACCOUNTS,
+                RequestSpecs.authWithToken(token),
+                ResponseSpecs.returnsOk())
                 .send()
-                .extract()
-                .as(BankAccounts.class)
                 .getAccounts();
 
         for (BankAccount account : userAccounts) {
@@ -55,10 +57,11 @@ public class User {
     }
 
     public float getSecondAccountBalance() {
-        List<BankAccount> userAccounts = new Requester(Endpoint.GET_USER_ACCOUNTS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        List<BankAccount> userAccounts = new ModelRequester<BankAccounts>(
+                Endpoint.GET_USER_ACCOUNTS,
+                RequestSpecs.authWithToken(token),
+                ResponseSpecs.returnsOk())
                 .send()
-                .extract()
-                .as(BankAccounts.class)
                 .getAccounts();
 
         for (BankAccount account : userAccounts) {
@@ -71,12 +74,12 @@ public class User {
     }
 
     public void depositFirstAccount(float amount) {
-        new Requester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send(new DepositMoneyRequest(firstAccountId, amount));
     }
 
     public void depositFirstAccount(float amount, int repeat) {
-        Requester requester = new Requester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
+        ValidationRequester requester = new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
 
         for (int i = 0; i < repeat; i++) {
             requester.send(new DepositMoneyRequest(firstAccountId, amount));
@@ -84,12 +87,12 @@ public class User {
     }
 
     public void depositSecondAccount(float amount) {
-        new Requester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+        new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send(new DepositMoneyRequest(secondAccountId, amount));
     }
 
     public void depositSecondAccount(float amount, int repeat) {
-        Requester requester = new Requester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
+        ValidationRequester requester = new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
 
         for (int i = 0; i < repeat; i++) {
             requester.send(new DepositMoneyRequest(secondAccountId, amount));
@@ -105,7 +108,7 @@ public class User {
         public Builder crateUser(String username, String password) {
             CreateUserRequest request = new CreateUserRequest(username, password, UserRole.USER.toString());
 
-            Response response = new Requester(Endpoint.CREATE_USER, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
+            Response response = new ValidationRequester(Endpoint.CREATE_USER, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
                     .send(request)
                     .extract()
                     .response();
@@ -119,7 +122,7 @@ public class User {
         public Builder createRandomUser() {
             CreateUserRequest request = RandomModel.generate(CreateUserRequest.class);
 
-            Response response = new Requester(Endpoint.CREATE_USER, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
+            Response response = new ValidationRequester(Endpoint.CREATE_USER, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsCreated())
                     .send(request)
                     .extract()
                     .response();
@@ -131,7 +134,7 @@ public class User {
         }
 
         public Builder createFirstAccount() {
-            firstAccountId = new Requester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
+            firstAccountId = new ValidationRequester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
                     .send()
                     .extract()
                     .as(BankAccount.class)
@@ -141,7 +144,7 @@ public class User {
         }
 
         public Builder createSecondAccount() {
-            secondAccountId = new Requester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
+            secondAccountId = new ValidationRequester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
                     .send()
                     .extract()
                     .as(BankAccount.class)
