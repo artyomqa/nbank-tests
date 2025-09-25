@@ -74,8 +74,20 @@ public class User {
         throw new AssertionError("Ошибка при получении баланса. Счет с id = " + secondAccountId + " не найден.");
     }
 
-    public void depositFirstAccount(float amount) {
-        new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+    public List<Transaction> getFirstAccountTransactions() {
+        return new ModelRequester<Transactions>(Endpoint.GET_ACCOUNT_TRANSACTIONS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+                .send(firstAccountId)
+                .getTransactions();
+    }
+
+    public List<Transaction> getSecondAccountTransactions() {
+        return new ModelRequester<Transactions>(Endpoint.GET_ACCOUNT_TRANSACTIONS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+                .send(secondAccountId)
+                .getTransactions();
+    }
+
+    public BankAccount depositFirstAccount(float amount) {
+        return new ModelRequester<BankAccount>(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send(new DepositMoneyRequest(firstAccountId, amount));
     }
 
@@ -87,8 +99,8 @@ public class User {
         }
     }
 
-    public void depositSecondAccount(float amount) {
-        new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+    public BankAccount depositSecondAccount(float amount) {
+        return new ModelRequester<BankAccount>(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send(new DepositMoneyRequest(secondAccountId, amount));
     }
 

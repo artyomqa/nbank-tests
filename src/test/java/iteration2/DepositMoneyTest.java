@@ -5,7 +5,8 @@ import models.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.*;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.ValidationRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 import steps.User;
@@ -54,17 +55,9 @@ public class DepositMoneyTest extends BaseTest {
         float expectedBalance = TestUtils.getCorrectAmount(initialBalance + amount);
 
         // Пополняем баланс
-        DepositMoneyRequest request = DepositMoneyRequest.builder()
-                .id(firstUser.firstAccountId())
-                .balance(amount)
-                .build();
+        BankAccount response = firstUser.depositFirstAccount(amount);
 
-        BankAccount response = new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsOk())
-                .send(request)
-                .extract()
-                .as(BankAccount.class);
-
-        softly.assertThat(response.getId()).isEqualTo(request.getId());
+        softly.assertThat(response.getId()).isEqualTo(firstUser.firstAccountId());
         softly.assertThat(response.getBalance()).isEqualTo(expectedBalance);
 
         // Проверяем, что баланс пользователя изменился
@@ -80,13 +73,10 @@ public class DepositMoneyTest extends BaseTest {
         float initialBalance = firstUser.getFirstAccountBalance();
 
         // Пытаемся пополнить баланс и проверяем, что в ответе статус-код 400
-        DepositMoneyRequest request = DepositMoneyRequest.builder()
-                .id(firstUser.firstAccountId())
-                .balance(amount)
-                .build();
-
-        new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsBadRequest())
-                .send(request);
+        new ValidationRequester(Endpoint.DEPOSIT_MONEY,
+                RequestSpecs.authWithToken(firstUser.token()),
+                ResponseSpecs.returnsBadRequest())
+                .send(new DepositMoneyRequest(firstUser.firstAccountId(), amount));
 
         // Проверяем, что баланс пользователя не изменился
         float actualBalance = firstUser.getFirstAccountBalance();
@@ -105,7 +95,9 @@ public class DepositMoneyTest extends BaseTest {
                 .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
-        new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsForbidden())
+        new ValidationRequester(Endpoint.DEPOSIT_MONEY,
+                RequestSpecs.authWithToken(firstUser.token()),
+                ResponseSpecs.returnsForbidden())
                 .send(request);
 
         // Проверяем, что баланс пользователя не изменился
@@ -121,7 +113,9 @@ public class DepositMoneyTest extends BaseTest {
                 .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
-        new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsForbidden())
+        new ValidationRequester(Endpoint.DEPOSIT_MONEY,
+                RequestSpecs.authWithToken(firstUser.token()),
+                ResponseSpecs.returnsForbidden())
                 .send(request);
     }
 
@@ -136,7 +130,7 @@ public class DepositMoneyTest extends BaseTest {
                 .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
-        new DepositMoneyRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
+        new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
                 .send(request);
 
         // Проверяем, что баланс пользователя не изменился
@@ -155,7 +149,7 @@ public class DepositMoneyTest extends BaseTest {
                 .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
-        new DepositMoneyRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsUnauthorized())
+        new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.noAuth(), ResponseSpecs.returnsUnauthorized())
                 .send(request);
 
         // Проверяем, что баланс пользователя не изменился
@@ -169,21 +163,15 @@ public class DepositMoneyTest extends BaseTest {
         float depositAmount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
 
         // Пополняем баланс
-        new DepositMoneyRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsOk())
-                .send(new DepositMoneyRequest(firstUser.secondAccountId(), depositAmount));
+        firstUser.depositSecondAccount(depositAmount);
 
         // Получаем список транзакций по счету
-        List<Transaction> transactions = new GetAccountTransactionsRequester(RequestSpecs.authWithToken(firstUser.token()), ResponseSpecs.returnsOk())
-                .send(firstUser.secondAccountId())
-                .extract()
-                .jsonPath()
-                .getList("", Transaction.class);
-
+        List<Transaction> transactions = firstUser.getSecondAccountTransactions();
 
         // Проверяем, что в списке есть депозит на эту сумму (amount) и он связан с этим счетом (relatedAccountId)
         softly.assertThat(transactions)
                 .anyMatch(transaction ->
-                        transaction.getType().equals("DEPOSIT") &&
+                        transaction.getType().equals(TransactionType.DEPOSIT.toString()) &&
                                 transaction.getAmount() == depositAmount &&
                                 transaction.getRelatedAccountId() == firstUser.secondAccountId());
     }
