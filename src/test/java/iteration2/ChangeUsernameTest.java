@@ -2,7 +2,7 @@ package iteration2;
 
 import generators.RandomData;
 import models.ChangeNameRequest;
-import models.User;
+import steps.User;
 import models.UserProfile;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import requests.ChangeNameRequester;
-import requests.DeleteUserRequester;
 import requests.GetUserProfileRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
@@ -32,8 +31,7 @@ public class ChangeUsernameTest extends BaseTest {
     // Удаляем пользователя после прохождения тестов
     @AfterAll
     public static void deleteUser() {
-        new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
-                .send(user.id());
+        user.deleteUser();
     }
 
 

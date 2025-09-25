@@ -1,5 +1,6 @@
 package requests.skelethon.requesters;
 
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import models.BaseModel;
@@ -27,6 +28,16 @@ public class ModelRequester<T extends BaseModel> extends Requester {
                 .spec(requestSpecification)
                 .body(model)
                 .request(endpoint.getMethod(), apiVersion + endpoint.getUrl())
+                .then()
+                .spec(responseSpecification)
+                .extract()
+                .as((Class<T>) endpoint.getResponseModel());
+    }
+
+    public T send(int entityId) {
+        return given()
+                .spec(requestSpecification)
+                .request(endpoint.getMethod(), apiVersion + endpoint.getUrl().formatted(entityId))
                 .then()
                 .spec(responseSpecification)
                 .extract()

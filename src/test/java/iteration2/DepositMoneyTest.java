@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import requests.*;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
+import steps.User;
 import utils.TestUtils;
 
 import java.util.List;
@@ -37,11 +38,8 @@ public class DepositMoneyTest extends BaseTest {
     // Удаляем юзеров после прохождения всех тестов
     @AfterAll
     public static void deleteUsers() {
-        new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
-                .send(firstUser.id());
-
-        new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
-                .send(secondUser.id());
+        firstUser.deleteUser();
+        secondUser.deleteUser();
     }
 
 

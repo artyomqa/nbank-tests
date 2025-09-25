@@ -1,7 +1,8 @@
-package models;
+package steps;
 
 import generators.RandomModel;
 import io.restassured.response.Response;
+import models.*;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.ModelRequester;
 import requests.skelethon.requesters.ValidationRequester;
@@ -97,6 +98,11 @@ public class User {
         for (int i = 0; i < repeat; i++) {
             requester.send(new DepositMoneyRequest(secondAccountId, amount));
         }
+    }
+
+    public void deleteUser() {
+        new ValidationRequester(Endpoint.DELETE_USER, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
+                .send(id);
     }
 
     public static class Builder {

@@ -5,11 +5,11 @@ import models.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.DeleteUserRequester;
 import requests.GetAccountTransactionsRequester;
 import requests.TransferMoneyRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
+import steps.User;
 import utils.TestUtils;
 
 import java.util.List;
@@ -40,11 +40,8 @@ public class TransferMoneyTest extends BaseTest {
     // Удаляем юзеров после прохождения каждого теста
     @AfterEach
     public void deleteUsers() {
-        new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
-                .send(firstUser.id());
-
-        new DeleteUserRequester(RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
-                .send(secondUser.id());
+        firstUser.deleteUser();
+        secondUser.deleteUser();
     }
 
 

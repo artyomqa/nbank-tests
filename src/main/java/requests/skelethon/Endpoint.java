@@ -10,6 +10,7 @@ import models.*;
 public enum Endpoint {
     CREATE_USER(Method.POST, "/admin/users", CreateUserRequest.class, UserProfile.class),
     CREATE_BANK_ACCOUNT(Method.POST, "/accounts", null, BankAccount.class),
+    DELETE_USER(Method.DELETE, "/admin/users/%d", null, null),
     GET_USER_ACCOUNTS(Method.GET, "/customer/accounts", null, BankAccounts.class),
     DEPOSIT_MONEY(Method.POST, "/accounts/deposit", DepositMoneyRequest.class, BankAccount.class);
 

@@ -29,4 +29,12 @@ public class ValidationRequester extends Requester {
                 .then()
                 .spec(responseSpecification);
     }
+
+    public ValidatableResponse send(int entityId) {
+        return given()
+                .spec(requestSpecification)
+                .request(endpoint.getMethod(), apiVersion + endpoint.getUrl().formatted(entityId))
+                .then()
+                .spec(responseSpecification);
+    }
 }
