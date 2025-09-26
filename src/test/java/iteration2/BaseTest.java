@@ -15,8 +15,8 @@ public class BaseTest {
 
     @BeforeAll
     public static void globalSetup() {
-        RestAssured.baseURI = Config.getString("host");
-        RestAssured.port = Config.getInt("port");
+        RestAssured.baseURI = Config.getString("service.host");
+        RestAssured.port = Config.getInt("service.port");
     }
 
     @BeforeEach

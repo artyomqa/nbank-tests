@@ -1,10 +1,12 @@
 package specs;
 
+import configs.Config;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import models.LoginRequest;
-import requests.LoginRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.ValidationRequester;
 import utils.HttpLoggingFilter;
 
 public class RequestSpecs {
@@ -25,8 +27,8 @@ public class RequestSpecs {
 
     public static RequestSpecification authAsAdmin() {
         if (adminToken == null) {
-            adminToken = new LoginRequester(RequestSpecs.noAuth(), ResponseSpecs.returnsOk())
-                    .send(LoginRequest.builder().username("admin").password("admin").build())
+            adminToken = new ValidationRequester(Endpoint.LOGIN, RequestSpecs.noAuth(), ResponseSpecs.returnsOk())
+                    .send(new LoginRequest(Config.getString("admin.username"), Config.getString("admin.password")))
                     .extract()
                     .header("Authorization");
         }
