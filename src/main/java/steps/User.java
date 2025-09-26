@@ -86,6 +86,11 @@ public class User {
                 .getTransactions();
     }
 
+    public UserProfile getProfile() {
+        return new ModelRequester<UserProfile>(Endpoint.GET_USER_PROFILE, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+                .send();
+    }
+
     public BankAccount depositFirstAccount(float amount) {
         return new ModelRequester<BankAccount>(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send(new DepositMoneyRequest(firstAccountId, amount));
@@ -110,6 +115,13 @@ public class User {
         for (int i = 0; i < repeat; i++) {
             requester.send(new DepositMoneyRequest(secondAccountId, amount));
         }
+    }
+
+    public void changeName(String newName) {
+        new ModelRequester<ChangeNameResponse>(Endpoint.CHANGE_NAME,
+                RequestSpecs.authWithToken(token),
+                ResponseSpecs.successfulChangeName(newName))
+                .send(new ChangeNameRequest(newName));
     }
 
     public void deleteUser() {
