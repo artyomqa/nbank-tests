@@ -1,9 +1,9 @@
-package requests.skelethon.requesters;
+package requests.requesters;
 
 import configs.Config;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
-import requests.skelethon.Endpoint;
+import requests.Endpoint;
 
 public abstract class Requester {
     protected final Endpoint endpoint;

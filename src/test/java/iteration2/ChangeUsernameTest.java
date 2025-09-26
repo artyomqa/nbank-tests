@@ -2,8 +2,8 @@ package iteration2;
 
 import generators.RandomModel;
 import models.ChangeNameRequest;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.ValidationRequester;
+import requests.Endpoint;
+import requests.requesters.ValidationRequester;
 import steps.User;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

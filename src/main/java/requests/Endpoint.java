@@ -1,4 +1,4 @@
-package requests.skelethon;
+package requests;
 
 import io.restassured.http.Method;
 import lombok.AllArgsConstructor;

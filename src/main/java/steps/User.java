@@ -3,9 +3,9 @@ package steps;
 import generators.RandomModel;
 import io.restassured.response.Response;
 import models.*;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.ModelRequester;
-import requests.skelethon.requesters.ValidationRequester;
+import requests.Endpoint;
+import requests.requesters.ModelRequester;
+import requests.requesters.ValidationRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 

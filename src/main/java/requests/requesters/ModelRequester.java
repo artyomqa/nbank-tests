@@ -1,9 +1,9 @@
-package requests.skelethon.requesters;
+package requests.requesters;
 
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import models.BaseModel;
-import requests.skelethon.Endpoint;
+import requests.Endpoint;
 
 import static io.restassured.RestAssured.given;
 

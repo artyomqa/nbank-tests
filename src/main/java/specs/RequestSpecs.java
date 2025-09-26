@@ -5,8 +5,8 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import models.LoginRequest;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.ValidationRequester;
+import requests.Endpoint;
+import requests.requesters.ValidationRequester;
 import utils.HttpLoggingFilter;
 
 public class RequestSpecs {
