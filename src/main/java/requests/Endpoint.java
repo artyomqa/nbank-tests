@@ -16,6 +16,7 @@ public enum Endpoint {
     DEPOSIT_MONEY(Method.POST, "/accounts/deposit", DepositMoneyRequest.class, BankAccount.class),
     TRANSFER_MONEY(Method.POST, "/accounts/transfer", TransferMoneyRequest.class, TransferMoneyResponse.class),
     GET_USER_PROFILE(Method.GET, "/customer/profile", null, UserProfile.class),
+    GET_ALL_USERS(Method.GET, "/admin/users", null, UserProfiles.class),
     GET_USER_ACCOUNTS(Method.GET, "/customer/accounts", null, BankAccounts.class),
     GET_ACCOUNT_TRANSACTIONS(Method.GET, "/accounts/%d/transactions", null, Transactions.class);
 

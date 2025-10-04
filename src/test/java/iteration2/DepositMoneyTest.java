@@ -6,6 +6,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import requests.Endpoint;
+import requests.requesters.ModelRequester;
 import requests.requesters.ValidationRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
@@ -108,8 +109,22 @@ public class DepositMoneyTest extends BaseTest {
     @Test
     @DisplayName("Пополнение баланса на несуществующем id счета")
     public void userCannotDepositToInvalidAccountTest() {
+        int invalidAccountId = firstUser.firstAccountId() + secondUser.firstAccountId();
+
+        // Проверка, что счет не существует
+        List<Integer> accountIds = new ModelRequester<UserProfiles>(Endpoint.GET_ALL_USERS, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
+                .send()
+                .getUserProfiles()
+                .stream()
+                .flatMap(userProfile -> userProfile.getAccounts().stream())
+                .map(BankAccount::getId)
+                .toList();
+
+        assertThat(accountIds).doesNotContain(invalidAccountId);
+
+        // Пытаемся пополнить несуществующий счет
         DepositMoneyRequest request = DepositMoneyRequest.builder()
-                .id(firstUser.firstAccountId() + secondUser.firstAccountId())
+                .id(invalidAccountId)
                 .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
