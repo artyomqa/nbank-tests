@@ -3,10 +3,8 @@ package iteration2.ui;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
 import generators.RandomData;
-import models.BankAccount;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.Alert;
-import org.openqa.selenium.NoSuchElementException;
 import steps.User;
 import utils.TestUtils;
 
@@ -43,16 +41,8 @@ public class DepositMoneyTest extends BaseTest {
     @Test
     @DisplayName("Успешное пополнение баланса")
     public void userCanDepositTest() {
-        // Получаем данные счета
-        BankAccount account = user.getProfile()
-                .getAccounts()
-                .stream()
-                .filter((acc) -> acc.getId() == user.firstAccountId())
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Счет с id: " + user.firstAccountId() + " не найден!"));
-
-        String accountNumber = account.getAccountNumber();
-        float initialBalance = account.getBalance();
+        String accountNumber = user.getFirstAccountNumber();
+        float initialBalance = user.getFirstAccountBalance();
 
         $$("button").findBy(Condition.text("Deposit Money")).click();
 
@@ -64,7 +54,7 @@ public class DepositMoneyTest extends BaseTest {
         float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
         $(".deposit-input").setValue(String.valueOf(amount));
 
-        $(".btn-primary").click();
+        $$("button").findBy(Condition.text("Deposit")).click();
 
         Alert alert = switchTo().alert();
         String expectedMessage = String.format("Successfully deposited $%s to account %s!", amount, accountNumber);
@@ -94,7 +84,7 @@ public class DepositMoneyTest extends BaseTest {
 
         $(".deposit-input").setValue(String.valueOf(MAX_DEPOSIT_AMOUNT + 0.01f));
 
-        $(".btn-primary").click();
+        $$("button").findBy(Condition.text("Deposit")).click();
 
         Alert alert = switchTo().alert();
         assertThat(alert.getText()).contains("Please deposit less or equal to 5000$");
@@ -122,7 +112,7 @@ public class DepositMoneyTest extends BaseTest {
 
         $(".deposit-input").setValue("0");
 
-        $(".btn-primary").click();
+        $$("button").findBy(Condition.text("Deposit")).click();
 
         Alert alert = switchTo().alert();
         assertThat(alert.getText()).contains("Please enter a valid amount");

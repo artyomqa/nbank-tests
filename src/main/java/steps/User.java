@@ -3,6 +3,7 @@ package steps;
 import generators.RandomModel;
 import io.restassured.response.Response;
 import models.*;
+import org.openqa.selenium.NoSuchElementException;
 import requests.Endpoint;
 import requests.requesters.ModelRequester;
 import requests.requesters.ValidationRequester;
@@ -72,6 +73,26 @@ public class User {
         }
 
         throw new AssertionError("Ошибка при получении баланса. Счет с id = " + secondAccountId + " не найден.");
+    }
+
+    public String getFirstAccountNumber() {
+        return this.getProfile()
+                .getAccounts()
+                .stream()
+                .filter(acc -> acc.getId() == firstAccountId)
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Счет с id: " + firstAccountId + " не найден!"))
+                .getAccountNumber();
+    }
+
+    public String getSecondAccountNumber() {
+        return this.getProfile()
+                .getAccounts()
+                .stream()
+                .filter(acc -> acc.getId() == secondAccountId)
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Счет с id: " + secondAccountId + " не найден!"))
+                .getAccountNumber();
     }
 
     public List<Transaction> getFirstAccountTransactions() {
