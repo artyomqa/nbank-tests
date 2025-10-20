@@ -17,7 +17,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DepositMoneyTest extends BaseTest {
+public class DepositMoneyTest extends BaseAPITest {
     private static User firstUser;
     private static User secondUser;
 

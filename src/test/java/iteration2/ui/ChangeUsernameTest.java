@@ -10,7 +10,7 @@ import steps.User;
 import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChangeUsernameTest extends BaseTest {
+public class ChangeUsernameTest extends BaseUITest {
     private static User user;
 
     // Перед запуском всех тестов создаем пользователя

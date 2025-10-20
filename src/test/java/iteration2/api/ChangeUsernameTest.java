@@ -16,7 +16,7 @@ import specs.ResponseSpecs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChangeUsernameTest extends BaseTest {
+public class ChangeUsernameTest extends BaseAPITest {
     private static User user;
 
     // Перед запуском всех тестов создаем пользователя

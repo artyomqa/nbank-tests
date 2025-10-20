@@ -11,7 +11,7 @@ import utils.TestUtils;
 import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DepositMoneyTest extends BaseTest {
+public class DepositMoneyTest extends BaseUITest {
     private static User user;
 
     @BeforeAll
