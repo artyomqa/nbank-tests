@@ -2,11 +2,11 @@ package iteration2.ui;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
-import generators.RandomData;
+import api.generators.RandomData;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.Alert;
-import steps.User;
-import utils.TestUtils;
+import api.steps.User;
+import api.utils.TestUtils;
 
 import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;

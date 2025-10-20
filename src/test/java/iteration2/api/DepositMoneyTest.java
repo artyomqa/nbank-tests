@@ -1,17 +1,17 @@
 package iteration2.api;
 
-import generators.RandomData;
-import models.*;
+import api.generators.RandomData;
+import api.models.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.Endpoint;
-import requests.requesters.ModelRequester;
-import requests.requesters.ValidationRequester;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
-import steps.User;
-import utils.TestUtils;
+import api.requests.Endpoint;
+import api.requests.requesters.ModelRequester;
+import api.requests.requesters.ValidationRequester;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
+import api.steps.User;
+import api.utils.TestUtils;
 
 import java.util.List;
 

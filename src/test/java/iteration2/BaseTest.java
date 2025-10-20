@@ -1,7 +1,7 @@
 package iteration2;
 
 import com.codeborne.selenide.Configuration;
-import configs.Config;
+import api.configs.Config;
 import io.restassured.RestAssured;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;

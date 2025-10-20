@@ -1,18 +1,18 @@
 package iteration2.api;
 
-import generators.RandomModel;
-import models.ChangeNameRequest;
-import requests.Endpoint;
-import requests.requesters.ValidationRequester;
-import steps.User;
+import api.generators.RandomModel;
+import api.models.ChangeNameRequest;
+import api.requests.Endpoint;
+import api.requests.requesters.ValidationRequester;
+import api.steps.User;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
