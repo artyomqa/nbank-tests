@@ -1,17 +1,16 @@
 package iteration2.ui;
 
-import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Selenide;
 import api.generators.RandomData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
 import api.steps.User;
 import api.utils.TestUtils;
+import ui.pages.BankAlert;
+import ui.pages.TransferMoneyPage;
+import ui.pages.UserDashboardPage;
 
-import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransferMoneyTest extends BaseUITest {
@@ -39,11 +38,8 @@ public class TransferMoneyTest extends BaseUITest {
         // Задаем имя получателю
         secondUser.changeName(RandomData.getName());
 
-        // Открываем браузер и сохраняем токен в local storage
-        Selenide.open("/");
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", firstUser.token());
-
-        Selenide.open("/dashboard");
+        // Авторизуемся как firstUser
+        auth(firstUser);
     }
 
     // Удаляем юзеров после прохождения каждого теста
@@ -60,30 +56,12 @@ public class TransferMoneyTest extends BaseUITest {
         String receiverAccountNumber = secondUser.getFirstAccountNumber();
         float amount = RandomData.getAmount(MAX_TRANSFER_AMOUNT);
 
-        $$("button").findBy(Condition.text("Make a Transfer")).click();
-
-        // Проверям, что открыта страница Make a Transfer
-        $$("button").findBy(Condition.text("Send Transfer")).shouldBe(Condition.visible);
-
-        $(".account-selector").selectOptionByValue(String.valueOf(firstUser.firstAccountId()));
-
-        $("input[placeholder='Enter recipient name']").setValue(receiverName);
-
-        $("input[placeholder='Enter recipient account number']").setValue(receiverAccountNumber);
-
-        $("input[placeholder='Enter amount']").setValue(String.valueOf(amount));
-
-        $("#confirmCheck").click();
-
-        $$("button").findBy(Condition.text("Send Transfer")).click();
-
-        Alert alert = switchTo().alert();
-        String expectedAlertMessage = String.format("Successfully transferred $%s to account %s!", amount, receiverAccountNumber);
-        assertThat(alert.getText()).contains(expectedAlertMessage);
-        alert.accept();
-
-        // Проверям, что открыта страница Make a Transfer
-        $$("button").findBy(Condition.text("Send Transfer")).shouldBe(Condition.visible);
+        new UserDashboardPage().open()
+                .goToMakeTransferPage()
+                .onPage(TransferMoneyPage.class)
+                .transfer(firstUser.firstAccountId(), receiverName, receiverAccountNumber, amount, true)
+                .checkAlertMessageAndAccept(BankAlert.SUCCESS_TRANSFER.format(amount, receiverAccountNumber))
+                .shouldBeOpened();
 
         // Проверяем, что балансы пользователей изменились
         float expectedSenderBalance = TestUtils.getCorrectAmount(MAX_TRANSFER_AMOUNT - amount);
@@ -97,29 +75,12 @@ public class TransferMoneyTest extends BaseUITest {
         String receiverName = secondUser.getProfile().getName();
         String receiverAccountNumber = secondUser.getFirstAccountNumber();
 
-        $$("button").findBy(Condition.text("Make a Transfer")).click();
-
-        // Проверям, что открыта страница Make a Transfer
-        $$("button").findBy(Condition.text("Send Transfer")).shouldBe(Condition.visible);
-
-        $(".account-selector").selectOptionByValue(String.valueOf(firstUser.firstAccountId()));
-
-        $("input[placeholder='Enter recipient name']").setValue(receiverName);
-
-        $("input[placeholder='Enter recipient account number']").setValue(receiverAccountNumber);
-
-        $("input[placeholder='Enter amount']").setValue(String.valueOf(MAX_TRANSFER_AMOUNT + 0.01f));
-
-        $("#confirmCheck").click();
-
-        $$("button").findBy(Condition.text("Send Transfer")).click();
-
-        Alert alert = switchTo().alert();
-        assertThat(alert.getText()).contains("Error: Invalid transfer: insufficient funds or invalid accounts");
-        alert.accept();
-
-        // Проверям, что открыта страница Make a Transfer
-        $$("button").findBy(Condition.text("Send Transfer")).shouldBe(Condition.visible);
+        new UserDashboardPage().open()
+                .goToMakeTransferPage()
+                .onPage(TransferMoneyPage.class)
+                .transfer(firstUser.firstAccountId(), receiverName, receiverAccountNumber, MAX_TRANSFER_AMOUNT + 0.01f, true)
+                .checkAlertMessageAndAccept(BankAlert.INVALID_TRANSFER_AMOUNT.getMessage())
+                .shouldBeOpened();
 
         // Проверяем, что балансы пользователей не изменились
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(MAX_TRANSFER_AMOUNT);
@@ -132,29 +93,12 @@ public class TransferMoneyTest extends BaseUITest {
         String receiverName = secondUser.getProfile().getName();
         String receiverAccountNumber = secondUser.getFirstAccountNumber();
 
-        $$("button").findBy(Condition.text("Make a Transfer")).click();
-
-        // Проверям, что открыта страница Make a Transfer
-        $$("button").findBy(Condition.text("Send Transfer")).shouldBe(Condition.visible);
-
-        $(".account-selector").selectOptionByValue(String.valueOf(firstUser.firstAccountId()));
-
-        $("input[placeholder='Enter recipient name']").setValue(receiverName);
-
-        $("input[placeholder='Enter recipient account number']").setValue(receiverAccountNumber);
-
-        $("input[placeholder='Enter amount']").setValue("0");
-
-        $("#confirmCheck").click();
-
-        $$("button").findBy(Condition.text("Send Transfer")).click();
-
-        Alert alert = switchTo().alert();
-        assertThat(alert.getText()).contains("Error: Invalid transfer: insufficient funds or invalid accounts");
-        alert.accept();
-
-        // Проверям, что открыта страница Make a Transfer
-        $$("button").findBy(Condition.text("Send Transfer")).shouldBe(Condition.visible);
+        new UserDashboardPage().open()
+                .goToMakeTransferPage()
+                .onPage(TransferMoneyPage.class)
+                .transfer(firstUser.firstAccountId(), receiverName, receiverAccountNumber, 0f, true)
+                .checkAlertMessageAndAccept(BankAlert.INVALID_TRANSFER_AMOUNT.getMessage())
+                .shouldBeOpened();
 
         // Проверяем, что балансы пользователей не изменились
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(MAX_TRANSFER_AMOUNT);
@@ -166,31 +110,14 @@ public class TransferMoneyTest extends BaseUITest {
     public void userCannotTransferWithoutConfirmationTest() {
         String receiverName = secondUser.getProfile().getName();
         String receiverAccountNumber = secondUser.getFirstAccountNumber();
+        float amount = RandomData.getAmount(MAX_TRANSFER_AMOUNT);
 
-        $$("button").findBy(Condition.text("Make a Transfer")).click();
-
-        // Проверям, что открыта страница Make a Transfer
-        $$("button").findBy(Condition.text("Send Transfer")).shouldBe(Condition.visible);
-
-        $(".account-selector").selectOptionByValue(String.valueOf(firstUser.firstAccountId()));
-
-        $("input[placeholder='Enter recipient name']").setValue(receiverName);
-
-        $("input[placeholder='Enter recipient account number']").setValue(receiverAccountNumber);
-
-        $("input[placeholder='Enter amount']").setValue(String.valueOf(RandomData.getAmount(MAX_TRANSFER_AMOUNT)));
-
-        // Проверяем, что чекбокс снят
-        $("#confirmCheck").shouldNotBe(Condition.selected);
-
-        $$("button").findBy(Condition.text("Send Transfer")).click();
-
-        Alert alert = switchTo().alert();
-        assertThat(alert.getText()).contains("Please fill all fields and confirm");
-        alert.accept();
-
-        // Проверям, что открыта страница Make a Transfer
-        $$("button").findBy(Condition.text("Send Transfer")).shouldBe(Condition.visible);
+        new UserDashboardPage().open()
+                .goToMakeTransferPage()
+                .onPage(TransferMoneyPage.class)
+                .transfer(firstUser.firstAccountId(), receiverName, receiverAccountNumber, amount, false)
+                .checkAlertMessageAndAccept(BankAlert.MISSING_REQUIRED_FIELD.getMessage())
+                .shouldBeOpened();
 
         // Проверяем, что балансы пользователей не изменились
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(MAX_TRANSFER_AMOUNT);
