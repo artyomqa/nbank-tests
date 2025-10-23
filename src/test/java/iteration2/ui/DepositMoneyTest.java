@@ -1,16 +1,13 @@
 package iteration2.ui;
 
-import com.codeborne.selenide.Condition;
 import api.generators.RandomData;
 import org.junit.jupiter.api.*;
-import org.openqa.selenium.Alert;
 import api.steps.User;
 import api.utils.TestUtils;
 import ui.pages.BankAlert;
 import ui.pages.DepositMoneyPage;
 import ui.pages.UserDashboardPage;
 
-import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DepositMoneyTest extends BaseUITest {
@@ -61,23 +58,12 @@ public class DepositMoneyTest extends BaseUITest {
         // Получаем текущий баланс пользователя
         float initialBalance = user.getFirstAccountBalance();
 
-        $$("button").findBy(Condition.text("Deposit Money")).click();
-
-        // Проверям, что открыта страница Deposit Money
-        $(".deposit-input").shouldBe(Condition.visible);
-
-        $(".account-selector").selectOptionByValue(String.valueOf(user.firstAccountId()));
-
-        $(".deposit-input").setValue(String.valueOf(MAX_DEPOSIT_AMOUNT + 0.01f));
-
-        $$("button").findBy(Condition.text("Deposit")).click();
-
-        Alert alert = switchTo().alert();
-        assertThat(alert.getText()).contains("Please deposit less or equal to 5000$");
-        alert.accept();
-
-        // Проверям, что открыта страница Deposit Money
-        $(".deposit-input").shouldBe(Condition.visible);
+        new UserDashboardPage().open()
+                .goToDepositMoneyPage()
+                .onPage(DepositMoneyPage.class)
+                .depositMoney(user.firstAccountId(), MAX_DEPOSIT_AMOUNT + 0.01f)
+                .checkAlertMessageAndAccept(BankAlert.MAX_DEPOSIT_EXCEEDED.getMessage())
+                .onPage(DepositMoneyPage.class);
 
         // Проверяем, что баланс пользователя не изменился
         assertThat(user.getFirstAccountBalance()).isEqualTo(initialBalance);
@@ -89,23 +75,12 @@ public class DepositMoneyTest extends BaseUITest {
         // Получаем текущий баланс пользователя
         float initialBalance = user.getFirstAccountBalance();
 
-        $$("button").findBy(Condition.text("Deposit Money")).click();
-
-        // Проверям, что открыта страница Deposit Money
-        $(".deposit-input").shouldBe(Condition.visible);
-
-        $(".account-selector").selectOptionByValue(String.valueOf(user.firstAccountId()));
-
-        $(".deposit-input").setValue("0");
-
-        $$("button").findBy(Condition.text("Deposit")).click();
-
-        Alert alert = switchTo().alert();
-        assertThat(alert.getText()).contains("Please enter a valid amount");
-        alert.accept();
-
-        // Проверям, что открыта страница Deposit Money
-        $(".deposit-input").shouldBe(Condition.visible);
+        new UserDashboardPage().open()
+                .goToDepositMoneyPage()
+                .onPage(DepositMoneyPage.class)
+                .depositMoney(user.firstAccountId(), 0f)
+                .checkAlertMessageAndAccept(BankAlert.INVALID_DEPOSIT_AMOUNT.getMessage())
+                .onPage(DepositMoneyPage.class);
 
         // Проверяем, что баланс пользователя не изменился
         assertThat(user.getFirstAccountBalance()).isEqualTo(initialBalance);
