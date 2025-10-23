@@ -4,7 +4,6 @@ import api.models.*;
 import io.restassured.http.Method;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import api.models.*;
 
 @AllArgsConstructor
 @Getter

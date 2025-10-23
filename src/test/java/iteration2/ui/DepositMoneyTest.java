@@ -1,12 +1,14 @@
 package iteration2.ui;
 
 import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Selenide;
 import api.generators.RandomData;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.Alert;
 import api.steps.User;
 import api.utils.TestUtils;
+import ui.pages.BankAlert;
+import ui.pages.DepositMoneyPage;
+import ui.pages.UserDashboardPage;
 
 import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +17,7 @@ public class DepositMoneyTest extends BaseUITest {
     private static User user;
 
     @BeforeAll
-    public static void createUsersAndAccounts() {
+    public static void createUserAndAccount() {
         // Создание пользователя и счета
         user = new User.Builder()
                 .createRandomUser()
@@ -24,17 +26,13 @@ public class DepositMoneyTest extends BaseUITest {
     }
 
     @BeforeEach
-    public void openDashboardPageAsUser() {
-        // Открываем браузер и сохраняем токен в local storage
-        Selenide.open("/");
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", user.token());
-
-        Selenide.open("/dashboard");
+    public void authAsUser() {
+        auth(user);
     }
 
     // Удаляем юзера после прохождения всех тестов
     @AfterAll
-    public static void deleteUsers() {
+    public static void deleteUser() {
         user.deleteUser();
     }
 
@@ -43,26 +41,14 @@ public class DepositMoneyTest extends BaseUITest {
     public void userCanDepositTest() {
         String accountNumber = user.getFirstAccountNumber();
         float initialBalance = user.getFirstAccountBalance();
-
-        $$("button").findBy(Condition.text("Deposit Money")).click();
-
-        // Проверям, что открыта страница Deposit Money
-        $(".deposit-input").shouldBe(Condition.visible);
-
-        $(".account-selector").selectOptionByValue(String.valueOf(user.firstAccountId()));
-
         float amount = RandomData.getAmount(MAX_DEPOSIT_AMOUNT);
-        $(".deposit-input").setValue(String.valueOf(amount));
 
-        $$("button").findBy(Condition.text("Deposit")).click();
-
-        Alert alert = switchTo().alert();
-        String expectedMessage = String.format("Successfully deposited $%s to account %s!", amount, accountNumber);
-        assertThat(alert.getText()).contains(expectedMessage);
-        alert.accept();
-
-        // Проверяем, что выполнен переход на страницу User Dashboard
-        $(".welcome-text").shouldBe(Condition.visible);
+        new UserDashboardPage().open()
+                .goToDepositMoneyPage()
+                .onPage(DepositMoneyPage.class)
+                .depositMoney(user.firstAccountId(), amount)
+                .checkAlertMessageAndAccept(BankAlert.SUCCESS_DEPOSIT.format(amount, accountNumber))
+                .onPage(UserDashboardPage.class);
 
         // Проверяем, что баланс пользователя изменился
         float expectedBalance = TestUtils.getCorrectAmount(initialBalance + amount);
