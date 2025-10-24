@@ -10,6 +10,7 @@ public abstract class BasePage<T extends BasePage<T>> {
     public abstract String url();
     public abstract T shouldBeOpened();
 
+    // Получение Page Object страницы + проверка, что страница открыта
     public <P extends BasePage<P>> P onPage(Class<P> pageClass) {
         return page(pageClass).shouldBeOpened();
     }
