@@ -6,6 +6,7 @@ import common.steps.User;
 import ui.pages.BankAlert;
 import ui.pages.EditProfilePage;
 import ui.pages.UserDashboardPage;
+import ui.utils.annotations.Browsers;
 import ui.utils.annotations.UserSession;
 import ui.utils.storage.SessionStorage;
 
@@ -49,6 +50,7 @@ public class ChangeUsernameTest extends BaseUITest {
     @Test
     @DisplayName("Установка невалидного имени")
     @UserSession(userAccounts = 0)
+    @Browsers("chrome")
     public void userCannotChangeToInvalidNameTest() {
         String initialName = user.getProfile().getName();
         String expectedNameOnUI = initialName == null ? "noname" : initialName;

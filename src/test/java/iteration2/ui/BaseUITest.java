@@ -5,11 +5,13 @@ import com.codeborne.selenide.Configuration;
 import iteration2.BaseTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
+import ui.utils.extensions.BrowserMatchExtension;
 import ui.utils.extensions.UserSessionExtension;
 
 import java.util.Map;
 
 @ExtendWith(UserSessionExtension.class)
+@ExtendWith(BrowserMatchExtension.class)
 public class BaseUITest extends BaseTest {
     @BeforeAll
     public static void setupSelenoid() {

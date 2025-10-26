@@ -9,7 +9,7 @@ public class SessionStorage {
     private static final SessionStorage INSTANCE = new SessionStorage();
     private final LinkedList<User> users = new LinkedList<>();
 
-    private SessionStorage() {};
+    private SessionStorage() {}
 
     public static void addUsers(User... users) {
         INSTANCE.users.addAll(Arrays.asList(users));
