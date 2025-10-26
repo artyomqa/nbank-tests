@@ -1,4 +1,4 @@
-package api.steps;
+package common.steps;
 
 import api.generators.RandomModel;
 import api.models.*;
@@ -201,6 +201,12 @@ public class User {
                     .as(BankAccount.class)
                     .getId();
 
+            return this;
+        }
+
+        public Builder createAccounts(int count) {
+            if (count >= 1) createFirstAccount();
+            if (count >= 2) createSecondAccount();
             return this;
         }
 

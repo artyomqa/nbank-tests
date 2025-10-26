@@ -5,11 +5,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import api.steps.User;
+import common.steps.User;
 import api.utils.TestUtils;
 import ui.pages.BankAlert;
 import ui.pages.TransferMoneyPage;
 import ui.pages.UserDashboardPage;
+import ui.utils.annotations.UserSession;
+import ui.utils.storage.SessionStorage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,29 +19,16 @@ public class TransferMoneyTest extends BaseUITest {
     private static User firstUser;
     private static User secondUser;
 
-    // Перед запуском каждого теста создаем пользователей и счета
     @BeforeEach
-    public void createUsersAndOpenDashboardPage() {
-        // Создание первого пользователя и счета
-        firstUser = new User.Builder()
-                .createRandomUser()
-                .createFirstAccount()
-                .build();
+    public void init() {
+        firstUser = SessionStorage.getUser(1);
+        secondUser = SessionStorage.getUser(2);
 
         // Пополняем счет отправителя
         firstUser.depositFirstAccount(MAX_DEPOSIT_AMOUNT, 2);
 
-        // Создание второго пользователя и счета
-        secondUser = new User.Builder()
-                .createRandomUser()
-                .createFirstAccount()
-                .build();
-
         // Задаем имя получателю
         secondUser.changeName(RandomData.getName());
-
-        // Авторизуемся как firstUser
-        auth(firstUser);
     }
 
     // Удаляем юзеров после прохождения каждого теста
@@ -51,6 +40,7 @@ public class TransferMoneyTest extends BaseUITest {
 
     @Test
     @DisplayName("Успешный перевод")
+    @UserSession(users = 2)
     public void userCanTransferMoneyTest() {
         String receiverName = secondUser.getProfile().getName();
         String receiverAccountNumber = secondUser.getFirstAccountNumber();
@@ -71,6 +61,7 @@ public class TransferMoneyTest extends BaseUITest {
 
     @Test
     @DisplayName("Перевод на сумму, превышающую максимальную")
+    @UserSession(users = 2)
     public void userCannotTransferWithGreaterThanMaximumAmountTest() {
         String receiverName = secondUser.getProfile().getName();
         String receiverAccountNumber = secondUser.getFirstAccountNumber();
@@ -89,6 +80,7 @@ public class TransferMoneyTest extends BaseUITest {
 
     @Test
     @DisplayName("Невалидная сумма при переводе")
+    @UserSession(users = 2)
     public void userCannotTransferWithInvalidAmountTest() {
         String receiverName = secondUser.getProfile().getName();
         String receiverAccountNumber = secondUser.getFirstAccountNumber();
@@ -107,6 +99,7 @@ public class TransferMoneyTest extends BaseUITest {
 
     @Test
     @DisplayName("Не выбрано подтверждение корректности данных")
+    @UserSession(users = 2)
     public void userCannotTransferWithoutConfirmationTest() {
         String receiverName = secondUser.getProfile().getName();
         String receiverAccountNumber = secondUser.getFirstAccountNumber();

@@ -4,7 +4,7 @@ import api.generators.RandomModel;
 import api.models.ChangeNameRequest;
 import api.requests.Endpoint;
 import api.requests.requesters.ValidationRequester;
-import api.steps.User;
+import common.steps.User;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;

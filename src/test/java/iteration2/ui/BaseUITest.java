@@ -1,16 +1,15 @@
 package iteration2.ui;
 
-import api.configs.Config;
-import api.steps.User;
+import common.configs.Config;
 import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selenide;
 import iteration2.BaseTest;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
+import ui.utils.extensions.UserSessionExtension;
 
 import java.util.Map;
 
-import static com.codeborne.selenide.Selenide.executeJavaScript;
-
+@ExtendWith(UserSessionExtension.class)
 public class BaseUITest extends BaseTest {
     @BeforeAll
     public static void setupSelenoid() {
@@ -22,10 +21,5 @@ public class BaseUITest extends BaseTest {
         Configuration.browserCapabilities.setCapability(
                 "selenoid:options",
                 Map.of("enableVNC", true, "enableLog", true));
-    }
-
-    public void auth(User user) {
-        Selenide.open("/");
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", user.token());
     }
 }

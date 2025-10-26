@@ -1,6 +1,6 @@
 package api.specs;
 
-import api.configs.Config;
+import common.configs.Config;
 import api.models.LoginRequest;
 import api.utils.HttpLoggingFilter;
 import io.restassured.builder.RequestSpecBuilder;

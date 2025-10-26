@@ -2,39 +2,33 @@ package iteration2.ui;
 
 import api.generators.RandomData;
 import org.junit.jupiter.api.*;
-import api.steps.User;
+import common.steps.User;
 import api.utils.TestUtils;
 import ui.pages.BankAlert;
 import ui.pages.DepositMoneyPage;
 import ui.pages.UserDashboardPage;
+import ui.utils.annotations.UserSession;
+import ui.utils.storage.SessionStorage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DepositMoneyTest extends BaseUITest {
     private static User user;
 
-    @BeforeAll
-    public static void createUserAndAccount() {
-        // Создание пользователя и счета
-        user = new User.Builder()
-                .createRandomUser()
-                .createFirstAccount()
-                .build();
-    }
-
     @BeforeEach
-    public void authAsUser() {
-        auth(user);
+    public void init() {
+        user = SessionStorage.getUser();
     }
 
     // Удаляем юзера после прохождения всех тестов
-    @AfterAll
-    public static void deleteUser() {
+    @AfterEach
+    public void deleteUser() {
         user.deleteUser();
     }
 
     @Test
     @DisplayName("Успешное пополнение баланса")
+    @UserSession
     public void userCanDepositTest() {
         String accountNumber = user.getFirstAccountNumber();
         float initialBalance = user.getFirstAccountBalance();
@@ -54,6 +48,7 @@ public class DepositMoneyTest extends BaseUITest {
 
     @Test
     @DisplayName("Пополнение баланса на сумму, превышающую максимальную")
+    @UserSession
     public void userCannotDepositGreaterThanAllowedAmountTest() {
         // Получаем текущий баланс пользователя
         float initialBalance = user.getFirstAccountBalance();
@@ -71,6 +66,7 @@ public class DepositMoneyTest extends BaseUITest {
 
     @Test
     @DisplayName("Невалидная сумма при пополнении баланса")
+    @UserSession
     public void userCannotDepositWithInvalidAmountTest() {
         // Получаем текущий баланс пользователя
         float initialBalance = user.getFirstAccountBalance();

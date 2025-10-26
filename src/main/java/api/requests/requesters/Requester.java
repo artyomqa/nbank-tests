@@ -1,6 +1,6 @@
 package api.requests.requesters;
 
-import api.configs.Config;
+import common.configs.Config;
 import api.requests.Endpoint;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;

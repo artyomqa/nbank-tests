@@ -1,9 +1,10 @@
 package ui.pages;
 
+import common.steps.User;
+import com.codeborne.selenide.Selenide;
 import org.openqa.selenium.Alert;
 
-import static com.codeborne.selenide.Selenide.page;
-import static com.codeborne.selenide.Selenide.switchTo;
+import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class BasePage<T extends BasePage<T>> {
@@ -20,5 +21,10 @@ public abstract class BasePage<T extends BasePage<T>> {
         assertThat(alert.getText()).contains(message);
         alert.accept();
         return (T) this;
+    }
+
+    public static void auth(User user) {
+        Selenide.open("/");
+        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", user.token());
     }
 }

@@ -1,6 +1,6 @@
 package iteration2;
 
-import api.configs.Config;
+import common.configs.Config;
 import io.restassured.RestAssured;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;

@@ -10,7 +10,7 @@ import api.requests.requesters.ModelRequester;
 import api.requests.requesters.ValidationRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
-import api.steps.User;
+import common.steps.User;
 import api.utils.TestUtils;
 
 import java.util.List;
