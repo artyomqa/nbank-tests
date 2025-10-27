@@ -1,12 +1,17 @@
 package ui.pages;
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import ui.elements.TransactionItem;
+
+import java.util.List;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 public class TransferMoneyPage extends BasePage<TransferMoneyPage> {
+    private final SelenideElement transferAgainButton = $$("button").findBy(Condition.text("Transfer Again"));
     private final SelenideElement senderAccountSelector = $(".account-selector");
     private final SelenideElement recipientNameInput = $("input[placeholder='Enter recipient name']");
     private final SelenideElement recipientAccountInput = $("input[placeholder='Enter recipient account number']");
@@ -38,5 +43,15 @@ public class TransferMoneyPage extends BasePage<TransferMoneyPage> {
 
         transferButton.click();
         return this;
+    }
+
+    public TransferMoneyPage switchToTransferAgain() {
+        transferAgainButton.click();
+        return this;
+    }
+
+    public List<TransactionItem> getAllTransactions() {
+        ElementsCollection elements = $(".list-group").findAll("li");
+        return generatePageElements(elements, TransactionItem::new);
     }
 }

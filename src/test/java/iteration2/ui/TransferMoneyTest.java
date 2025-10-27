@@ -1,17 +1,27 @@
 package iteration2.ui;
 
 import api.generators.RandomData;
+import api.models.TransactionType;
+import api.models.TransferMoneyRequest;
+import api.models.TransferMoneyResponse;
+import api.requests.Endpoint;
+import api.requests.requesters.ModelRequester;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import common.steps.User;
 import api.utils.TestUtils;
+import ui.elements.TransactionItem;
 import ui.pages.BankAlert;
 import ui.pages.TransferMoneyPage;
 import ui.pages.UserDashboardPage;
 import ui.utils.annotations.UserSession;
 import ui.utils.storage.SessionStorage;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -115,5 +125,29 @@ public class TransferMoneyTest extends BaseUITest {
         // Проверяем, что балансы пользователей не изменились
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(MAX_TRANSFER_AMOUNT);
         assertThat(secondUser.getFirstAccountBalance()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Получение списка транзакций")
+    @UserSession(users = 2)
+    public void userCanGetListOfTransactions() {
+        float amount = RandomData.getAmount(MAX_TRANSFER_AMOUNT);
+
+        // Выполняем перевод
+        new ModelRequester<TransferMoneyResponse>(
+                Endpoint.TRANSFER_MONEY,
+                RequestSpecs.authWithToken(firstUser.token()),
+                ResponseSpecs.successfulTransfer())
+                .send(new TransferMoneyRequest(firstUser.firstAccountId(), secondUser.firstAccountId(), amount));
+
+        List<TransactionItem> transactions = new UserDashboardPage().open()
+                .goToMakeTransferPage()
+                .onPage(TransferMoneyPage.class)
+                .switchToTransferAgain()
+                .getAllTransactions();
+
+        // Проверяем, что в списке есть элемент, содержащий выполненный перевод
+        assertThat(transactions)
+                .anyMatch(item -> item.getType().equals(TransactionType.TRANSFER_OUT.toString()) && item.getAmount() == amount);
     }
 }
