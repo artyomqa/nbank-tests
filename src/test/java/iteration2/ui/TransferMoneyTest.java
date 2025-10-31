@@ -8,10 +8,7 @@ import api.requests.Endpoint;
 import api.requests.requesters.ModelRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import common.steps.User;
 import api.utils.TestUtils;
 import ui.elements.TransactionItem;
@@ -26,8 +23,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransferMoneyTest extends BaseUITest {
-    private static User firstUser;
-    private static User secondUser;
+    private User firstUser;
+    private User secondUser;
 
     @BeforeEach
     public void init() {

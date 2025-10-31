@@ -21,8 +21,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransferMoneyTest extends BaseAPITest {
-    private static User firstUser;
-    private static User secondUser;
+    private User firstUser;
+    private User secondUser;
 
     // Перед запуском каждого теста создаем пользователей и счета
     @BeforeEach

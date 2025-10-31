@@ -5,10 +5,7 @@ import api.models.ChangeNameRequest;
 import api.requests.Endpoint;
 import api.requests.requesters.ValidationRequester;
 import common.steps.User;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import api.specs.RequestSpecs;
@@ -17,19 +14,19 @@ import api.specs.ResponseSpecs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChangeUsernameTest extends BaseAPITest {
-    private static User user;
+    private User user;
 
     // Перед запуском всех тестов создаем пользователя
-    @BeforeAll
-    public static void createUser() {
+    @BeforeEach
+    public void createUser() {
         user = new User.Builder()
                 .createRandomUser()
                 .build();
     }
 
     // Удаляем пользователя после прохождения тестов
-    @AfterAll
-    public static void deleteUser() {
+    @AfterEach
+    public void deleteUser() {
         user.deleteUser();
     }
 

@@ -18,11 +18,11 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DepositMoneyTest extends BaseAPITest {
-    private static User firstUser;
-    private static User secondUser;
+    private User firstUser;
+    private User secondUser;
 
-    @BeforeAll
-    public static void createUsersAndAccounts() {
+    @BeforeEach
+    public void createUsersAndAccounts() {
         // Создание первого пользователя и двух счетов
         firstUser = new User.Builder()
                 .createRandomUser()
@@ -38,8 +38,8 @@ public class DepositMoneyTest extends BaseAPITest {
     }
 
     // Удаляем юзеров после прохождения всех тестов
-    @AfterAll
-    public static void deleteUsers() {
+    @AfterEach
+    public void deleteUsers() {
         firstUser.deleteUser();
         secondUser.deleteUser();
     }

@@ -13,7 +13,7 @@ import ui.utils.storage.SessionStorage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChangeUsernameTest extends BaseUITest {
-    private static User user;
+    private User user;
 
     @BeforeEach
     public void init() {
