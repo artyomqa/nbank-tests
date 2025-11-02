@@ -15,10 +15,15 @@ public class RequestSpecs {
     private RequestSpecs() {}
 
     private static RequestSpecBuilder defaultRequestBuilder() {
-        return new RequestSpecBuilder()
+        RequestSpecBuilder builder = new RequestSpecBuilder()
                 .setContentType(ContentType.JSON)
-                .setAccept(ContentType.JSON)
-                .addFilter(new HttpLoggingFilter());
+                .setAccept(ContentType.JSON);
+
+        if (Config.getBoolean("log.http.enabled")) {
+            return builder.addFilter(new HttpLoggingFilter());
+        }
+
+        return builder;
     }
 
     public static RequestSpecification noAuth() {

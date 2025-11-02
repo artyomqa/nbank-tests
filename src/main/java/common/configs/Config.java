@@ -38,4 +38,13 @@ public class Config {
 
         return Integer.parseInt(value);
     }
+
+    public static boolean getBoolean(String key) {
+        String value = instance.properties.getProperty(key);
+        if (value == null) {
+            throw new IllegalArgumentException("Key " + key + " not found in " + fileName);
+        }
+
+        return Boolean.parseBoolean(value);
+    }
 }
