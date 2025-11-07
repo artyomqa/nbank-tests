@@ -1,5 +1,6 @@
 package iteration2.api;
 
+import api.db.dao.CustomerDAO;
 import api.generators.RandomModel;
 import api.models.ChangeNameRequest;
 import api.requests.Endpoint;
@@ -38,8 +39,12 @@ public class ChangeUsernameTest extends BaseAPITest {
         // Изменяем имя
         user.changeName(name);
 
-        // Проверяем, что имя обновилось
+        // Проверяем в API, что имя обновилось
         assertThat(user.getProfile().getName()).isEqualTo(name);
+
+        // Проверяем в БД, что имя обновилось
+        String dbName = new CustomerDAO().findById(user.id()).getName();
+        assertThat(dbName).isEqualTo(name);
     }
 
     @ParameterizedTest
@@ -51,8 +56,12 @@ public class ChangeUsernameTest extends BaseAPITest {
         new ValidationRequester(Endpoint.CHANGE_NAME, RequestSpecs.authWithToken(user.token()), ResponseSpecs.returnsBadRequest())
                 .send(new ChangeNameRequest(name));
 
-        // Проверяем, что имя не обновилось
+        // Проверяем в API, что имя не обновилось
         assertThat(user.getProfile().getName()).isNotEqualTo(name);
+
+        // Проверяем в БД, что имя не обновилось
+        String dbName = new CustomerDAO().findById(user.id()).getName();
+        assertThat(dbName).isNotEqualTo(name);
     }
 
     @Test
