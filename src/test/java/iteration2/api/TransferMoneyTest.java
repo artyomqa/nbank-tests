@@ -1,5 +1,8 @@
 package iteration2.api;
 
+import api.db.dao.AccountDAO;
+import api.db.dao.TransactionDAO;
+import api.db.entities.TransactionEntity;
 import api.generators.RandomData;
 import api.models.Transaction;
 import api.models.TransactionType;
@@ -16,6 +19,7 @@ import api.specs.ResponseSpecs;
 import common.steps.User;
 import api.utils.TestUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,11 +77,19 @@ public class TransferMoneyTest extends BaseAPITest {
         softly.assertThat(response.getSenderAccountId()).isEqualTo(request.getSenderAccountId());
         softly.assertThat(response.getReceiverAccountId()).isEqualTo(request.getReceiverAccountId());
 
-        // Ожидаемый баланс счета-отправителя (округляем до 2 знаков после запятой, чтобы избежать неточностей)
+        // Ожидаемый баланс счета-отправителя
         float senderExpectedBalance = TestUtils.getCorrectAmount(10000f - amount);
 
+        // Проверяем баланс в API
         softly.assertThat(firstUser.getFirstAccountBalance()).isEqualTo(senderExpectedBalance);
         softly.assertThat(firstUser.getSecondAccountBalance()).isEqualTo(amount);
+
+        // Проверяем баланс в БД
+        BigDecimal senderBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(senderBalance).isEqualTo(TestUtils.getCorrectBigDecimal(senderExpectedBalance));
+
+        BigDecimal receiverBalance = new AccountDAO().findByAccountId(firstUser.secondAccountId()).getBalance();
+        softly.assertThat(receiverBalance).isEqualTo(TestUtils.getCorrectBigDecimal(amount));
     }
 
     @ParameterizedTest
@@ -104,11 +116,18 @@ public class TransferMoneyTest extends BaseAPITest {
         softly.assertThat(response.getSenderAccountId()).isEqualTo(request.getSenderAccountId());
         softly.assertThat(response.getReceiverAccountId()).isEqualTo(request.getReceiverAccountId());
 
-        // Ожидаемый баланс счета-отправителя (округляем до 2 знаков после запятой, чтобы избежать неточностей)
+        // Ожидаемый баланс счета-отправителя
         float senderExpectedBalance = TestUtils.getCorrectAmount(10000f - amount);
 
         softly.assertThat(firstUser.getFirstAccountBalance()).isEqualTo(senderExpectedBalance);
         softly.assertThat(secondUser.getFirstAccountBalance()).isEqualTo(amount);
+
+        // Проверяем баланс в БД
+        BigDecimal senderBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(senderBalance).isEqualTo(TestUtils.getCorrectBigDecimal(senderExpectedBalance));
+
+        BigDecimal receiverBalance = new AccountDAO().findByAccountId(secondUser.firstAccountId()).getBalance();
+        softly.assertThat(receiverBalance).isEqualTo(TestUtils.getCorrectBigDecimal(amount));
     }
 
     @ParameterizedTest
@@ -123,9 +142,16 @@ public class TransferMoneyTest extends BaseAPITest {
                 ResponseSpecs.returnsBadRequest())
                 .send(new TransferMoneyRequest(firstUser.firstAccountId(), secondUser.firstAccountId(), amount));
 
-        // Проверяем, что балансы пользователей не изменились
+        // Проверяем в API, что балансы пользователей не изменились
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(initialBalance);
         assertThat(secondUser.getFirstAccountBalance()).isEqualTo(0);
+
+        // Проверяем в БД, что балансы пользователей не изменились
+        BigDecimal senderBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(senderBalance).isEqualTo(TestUtils.getCorrectBigDecimal(initialBalance));
+
+        BigDecimal receiverBalance = new AccountDAO().findByAccountId(secondUser.firstAccountId()).getBalance();
+        softly.assertThat(receiverBalance).isEqualTo(TestUtils.getCorrectBigDecimal(0));
     }
 
     @Test
@@ -139,9 +165,16 @@ public class TransferMoneyTest extends BaseAPITest {
                 ResponseSpecs.returnsForbidden())
                 .send(new TransferMoneyRequest(secondUser.firstAccountId(), firstUser.firstAccountId(), amount));
 
-        // Проверяем, что балансы пользователей не изменились
+        // Проверяем в API, что балансы пользователей не изменились
         assertThat(secondUser.getFirstAccountBalance()).isEqualTo(amount);
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(0);
+
+        // Проверяем в БД, что балансы пользователей не изменились
+        BigDecimal senderBalance = new AccountDAO().findByAccountId(secondUser.firstAccountId()).getBalance();
+        softly.assertThat(senderBalance).isEqualTo(TestUtils.getCorrectBigDecimal(amount));
+
+        BigDecimal receiverBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(receiverBalance).isEqualTo(TestUtils.getCorrectBigDecimal(0));
     }
 
     @Test
@@ -158,8 +191,12 @@ public class TransferMoneyTest extends BaseAPITest {
                 ResponseSpecs.returnsForbidden())
                 .send(request);
 
-        // Проверяем, что баланс получателя не изменился
+        // Проверяем в API, что баланс получателя не изменился
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(0);
+
+        // Проверяем в БД, что баланс получателя не изменился
+        BigDecimal receiverBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(receiverBalance).isEqualTo(TestUtils.getCorrectBigDecimal(0));
     }
 
     @Test
@@ -179,8 +216,12 @@ public class TransferMoneyTest extends BaseAPITest {
                 ResponseSpecs.returnsBadRequest())
                 .send(request);
 
-        // Проверяем, что баланс отправителя не изменился
+        // Проверяем в API, что баланс отправителя не изменился
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(amount);
+
+        // Проверяем в БД, что баланс отправителя не изменился
+        BigDecimal senderBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(senderBalance).isEqualTo(TestUtils.getCorrectBigDecimal(amount));
     }
 
     @Test
@@ -195,8 +236,12 @@ public class TransferMoneyTest extends BaseAPITest {
                 ResponseSpecs.returnsBadRequest())
                 .send(new TransferMoneyRequest(firstUser.firstAccountId(), firstUser.firstAccountId(), amount));
 
-        // Проверяем, что баланс пользователя не изменился
+        // Проверяем в API, что баланс пользователя не изменился
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(amount);
+
+        // Проверяем в БД, что баланс пользователя не изменился
+        BigDecimal userBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(userBalance).isEqualTo(TestUtils.getCorrectBigDecimal(amount));
     }
 
     @Test
@@ -208,9 +253,16 @@ public class TransferMoneyTest extends BaseAPITest {
         new ValidationRequester(Endpoint.TRANSFER_MONEY, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
                 .send(new TransferMoneyRequest(firstUser.firstAccountId(), firstUser.secondAccountId(), amount));
 
-        // Проверяем, что балансы пользователя не изменилсь
+        // Проверяем в API, что балансы пользователя не изменилсь
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(amount);
         assertThat(firstUser.getSecondAccountBalance()).isEqualTo(0);
+
+        // Проверяем в БД, что балансы пользователя не изменились
+        BigDecimal firstAccountBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(firstAccountBalance).isEqualTo(TestUtils.getCorrectBigDecimal(amount));
+
+        BigDecimal secondAccountBalance = new AccountDAO().findByAccountId(firstUser.secondAccountId()).getBalance();
+        softly.assertThat(secondAccountBalance).isEqualTo(TestUtils.getCorrectBigDecimal(0));
     }
 
     @Test
@@ -222,8 +274,16 @@ public class TransferMoneyTest extends BaseAPITest {
         new ValidationRequester(Endpoint.TRANSFER_MONEY, RequestSpecs.noAuth(), ResponseSpecs.returnsUnauthorized())
                 .send(new TransferMoneyRequest(firstUser.firstAccountId(), firstUser.secondAccountId(), amount));
 
+        // Проверяем в API, что балансы пользователя не изменились
         assertThat(firstUser.getFirstAccountBalance()).isEqualTo(amount);
         assertThat(firstUser.getSecondAccountBalance()).isEqualTo(0);
+
+        // Проверяем в БД, что балансы пользователя не изменились
+        BigDecimal firstAccountBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(firstAccountBalance).isEqualTo(TestUtils.getCorrectBigDecimal(amount));
+
+        BigDecimal secondAccountBalance = new AccountDAO().findByAccountId(firstUser.secondAccountId()).getBalance();
+        softly.assertThat(secondAccountBalance).isEqualTo(TestUtils.getCorrectBigDecimal(0));
     }
 
     @Test
@@ -239,7 +299,7 @@ public class TransferMoneyTest extends BaseAPITest {
                 .send(new TransferMoneyRequest(firstUser.firstAccountId(), firstUser.secondAccountId(), transferAmount));
 
         /*
-        Проверяем:
+        Проверяем в API:
         1) на счете-отправителе есть транзакция на нужную сумму (amount) и она связана со счетом-получателем (relatedAccountId)
         2) на счете-получателе есть транзакция на нужную сумму (amount) и она связана со счетом-отправителем (relatedAccountId)
          */
@@ -257,6 +317,25 @@ public class TransferMoneyTest extends BaseAPITest {
                 .anyMatch(transaction ->
                         transaction.getType().equals(TransactionType.TRANSFER_IN.toString()) &&
                                 transaction.getAmount() == transferAmount &&
+                                transaction.getRelatedAccountId() == firstUser.firstAccountId());
+
+        /*
+        Проверяем в БД:
+        1) на счете-отправителе есть транзакция на нужную сумму (amount) и она связана со счетом-получателем (relatedAccountId)
+        2) на счете-получателе есть транзакция на нужную сумму (amount) и она связана со счетом-отправителем (relatedAccountId)
+         */
+        List<TransactionEntity> dbTransactions = new TransactionDAO().findAll();
+
+        softly.assertThat(dbTransactions)
+                .anyMatch(transaction ->
+                        transaction.getType().equals(TransactionType.TRANSFER_OUT.toString()) &&
+                                transaction.getAmount().compareTo(TestUtils.getCorrectBigDecimal(transferAmount)) == 0 &&
+                                transaction.getRelatedAccountId() == firstUser.secondAccountId());
+
+        softly.assertThat(dbTransactions)
+                .anyMatch(transaction ->
+                        transaction.getType().equals(TransactionType.TRANSFER_IN.toString()) &&
+                                transaction.getAmount().compareTo(TestUtils.getCorrectBigDecimal(transferAmount)) == 0 &&
                                 transaction.getRelatedAccountId() == firstUser.firstAccountId());
     }
 }
