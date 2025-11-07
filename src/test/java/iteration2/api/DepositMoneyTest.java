@@ -1,5 +1,8 @@
 package iteration2.api;
 
+import api.db.dao.AccountDAO;
+import api.db.dao.TransactionDAO;
+import api.db.entities.TransactionEntity;
 import api.generators.RandomData;
 import api.models.*;
 import org.junit.jupiter.api.*;
@@ -13,6 +16,7 @@ import api.specs.ResponseSpecs;
 import common.steps.User;
 import api.utils.TestUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,9 +65,13 @@ public class DepositMoneyTest extends BaseAPITest {
         softly.assertThat(response.getId()).isEqualTo(firstUser.firstAccountId());
         softly.assertThat(response.getBalance()).isEqualTo(expectedBalance);
 
-        // Проверяем, что баланс пользователя изменился
-        float actualBalance = firstUser.getFirstAccountBalance();
-        softly.assertThat(expectedBalance).isEqualTo(actualBalance);
+        // Проверяем в API, что баланс пользователя изменился
+        float apiBalance = firstUser.getFirstAccountBalance();
+        softly.assertThat(apiBalance).isEqualTo(expectedBalance);
+
+        // Проверяем в БД, что баланс пользователя изменился
+        BigDecimal dbBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(dbBalance).isEqualTo(TestUtils.getCorrectBigDecimal(expectedBalance));
     }
 
     @ParameterizedTest
@@ -79,9 +87,13 @@ public class DepositMoneyTest extends BaseAPITest {
                 ResponseSpecs.returnsBadRequest())
                 .send(new DepositMoneyRequest(firstUser.firstAccountId(), amount));
 
-        // Проверяем, что баланс пользователя не изменился
-        float actualBalance = firstUser.getFirstAccountBalance();
-        assertThat(actualBalance).isEqualTo(initialBalance);
+        // Проверяем в API, что баланс пользователя не изменился
+        float apiBalance = firstUser.getFirstAccountBalance();
+        assertThat(apiBalance).isEqualTo(initialBalance);
+
+        // Проверяем в БД, что баланс пользователя не изменился
+        BigDecimal dbBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(dbBalance).isEqualTo(TestUtils.getCorrectBigDecimal(initialBalance));
     }
 
     @Test
@@ -101,9 +113,13 @@ public class DepositMoneyTest extends BaseAPITest {
                 ResponseSpecs.returnsForbidden())
                 .send(request);
 
-        // Проверяем, что баланс пользователя не изменился
-        float actualBalance = secondUser.getFirstAccountBalance();
-        assertThat(actualBalance).isEqualTo(initialBalance);
+        // Проверяем в API, что баланс пользователя не изменился
+        float apiBalance = secondUser.getFirstAccountBalance();
+        assertThat(apiBalance).isEqualTo(initialBalance);
+
+        // Проверяем в БД, что баланс пользователя не изменился
+        BigDecimal dbBalance = new AccountDAO().findByAccountId(secondUser.firstAccountId()).getBalance();
+        softly.assertThat(dbBalance).isEqualTo(TestUtils.getCorrectBigDecimal(initialBalance));
     }
 
     @Test
@@ -111,7 +127,7 @@ public class DepositMoneyTest extends BaseAPITest {
     public void userCannotDepositToInvalidAccountTest() {
         int invalidAccountId = firstUser.firstAccountId() + secondUser.firstAccountId();
 
-        // Проверка, что счет не существует
+        // Проверяем в API, что счет не существует
         List<Integer> accountIds = new ModelRequester<UserProfiles>(Endpoint.GET_ALL_USERS, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsOk())
                 .send()
                 .getUserProfiles()
@@ -121,6 +137,9 @@ public class DepositMoneyTest extends BaseAPITest {
                 .toList();
 
         assertThat(accountIds).doesNotContain(invalidAccountId);
+
+        // Проверяем в БД, что счет не существует
+        assertThat(new AccountDAO().findByAccountId(invalidAccountId)).isNull();
 
         // Пытаемся пополнить несуществующий счет
         DepositMoneyRequest request = DepositMoneyRequest.builder()
@@ -148,9 +167,13 @@ public class DepositMoneyTest extends BaseAPITest {
         new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
                 .send(request);
 
-        // Проверяем, что баланс пользователя не изменился
-        float actualBalance = firstUser.getFirstAccountBalance();
-        assertThat(actualBalance).isEqualTo(initialBalance);
+        // Проверяем в API, что баланс пользователя не изменился
+        float apiBalance = firstUser.getFirstAccountBalance();
+        assertThat(apiBalance).isEqualTo(initialBalance);
+
+        // Проверяем в БД, что баланс пользователя не изменился
+        BigDecimal dbBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(dbBalance).isEqualTo(TestUtils.getCorrectBigDecimal(initialBalance));
     }
 
     @Test
@@ -167,9 +190,13 @@ public class DepositMoneyTest extends BaseAPITest {
         new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.noAuth(), ResponseSpecs.returnsUnauthorized())
                 .send(request);
 
-        // Проверяем, что баланс пользователя не изменился
-        float actualBalance = firstUser.getFirstAccountBalance();
-        assertThat(actualBalance).isEqualTo(initialBalance);
+        // Проверяем в API, что баланс пользователя не изменился
+        float apiBalance = firstUser.getFirstAccountBalance();
+        assertThat(apiBalance).isEqualTo(initialBalance);
+
+        // Проверяем в БД, что баланс пользователя не изменился
+        BigDecimal dbBalance = new AccountDAO().findByAccountId(firstUser.firstAccountId()).getBalance();
+        softly.assertThat(dbBalance).isEqualTo(TestUtils.getCorrectBigDecimal(initialBalance));
     }
 
     @Test
@@ -180,14 +207,24 @@ public class DepositMoneyTest extends BaseAPITest {
         // Пополняем баланс
         firstUser.depositSecondAccount(depositAmount);
 
-        // Получаем список транзакций по счету
-        List<Transaction> transactions = firstUser.getSecondAccountTransactions();
+        // Получаем из API список транзакций по счету
+        List<Transaction> apiTransactions = firstUser.getSecondAccountTransactions();
 
-        // Проверяем, что в списке есть депозит на эту сумму (amount) и он связан с этим счетом (relatedAccountId)
-        softly.assertThat(transactions)
+        // Проверяем в API, что в списке есть депозит на эту сумму (amount) и он связан с этим счетом (relatedAccountId)
+        softly.assertThat(apiTransactions)
                 .anyMatch(transaction ->
                         transaction.getType().equals(TransactionType.DEPOSIT.toString()) &&
                                 transaction.getAmount() == depositAmount &&
                                 transaction.getRelatedAccountId() == firstUser.secondAccountId());
+
+        // Получаем из БД список транзакций по счету
+        List<TransactionEntity> dbTransactions = new TransactionDAO().findAll();
+
+        // Проверяем в БД, что в таблице есть депозит на эту сумму (amount) и он связан с этим счетом (relatedAccountId)
+        softly.assertThat(dbTransactions)
+                .anyMatch(transaction ->
+                        transaction.getType().equals(TransactionType.DEPOSIT.toString()) &&
+                        transaction.getAmount().compareTo(TestUtils.getCorrectBigDecimal(depositAmount)) == 0 &&
+                        transaction.getRelatedAccountId() == firstUser.secondAccountId());
     }
 }
