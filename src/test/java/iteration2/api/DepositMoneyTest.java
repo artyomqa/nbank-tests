@@ -104,8 +104,8 @@ public class DepositMoneyTest extends BaseAPITest {
 
         // Пытаемся пополнить баланс другого пользователя
         DepositMoneyRequest request = DepositMoneyRequest.builder()
-                .id(secondUser.firstAccountId())
-                .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
+                .accountId(secondUser.firstAccountId())
+                .amount(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
         new ValidationRequester(Endpoint.DEPOSIT_MONEY,
@@ -143,8 +143,8 @@ public class DepositMoneyTest extends BaseAPITest {
 
         // Пытаемся пополнить несуществующий счет
         DepositMoneyRequest request = DepositMoneyRequest.builder()
-                .id(invalidAccountId)
-                .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
+                .accountId(invalidAccountId)
+                .amount(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
         new ValidationRequester(Endpoint.DEPOSIT_MONEY,
@@ -160,8 +160,8 @@ public class DepositMoneyTest extends BaseAPITest {
         float initialBalance = firstUser.getFirstAccountBalance();
 
         DepositMoneyRequest request = DepositMoneyRequest.builder()
-                .id(firstUser.firstAccountId())
-                .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
+                .accountId(firstUser.firstAccountId())
+                .amount(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
         new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authAsAdmin(), ResponseSpecs.returnsForbidden())
@@ -183,8 +183,8 @@ public class DepositMoneyTest extends BaseAPITest {
         float initialBalance = firstUser.getFirstAccountBalance();
 
         DepositMoneyRequest request = DepositMoneyRequest.builder()
-                .id(firstUser.firstAccountId())
-                .balance(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
+                .accountId(firstUser.firstAccountId())
+                .amount(RandomData.getAmount(MAX_DEPOSIT_AMOUNT))
                 .build();
 
         new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.noAuth(), ResponseSpecs.returnsUnauthorized())

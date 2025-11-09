@@ -10,6 +10,6 @@ import lombok.EqualsAndHashCode;
 @AllArgsConstructor
 @Builder
 public class DepositMoneyRequest extends BaseModel {
-    private int id;
-    private float balance;
+    private int accountId;
+    private float amount;
 }

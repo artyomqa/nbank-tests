@@ -15,6 +15,7 @@ public enum Endpoint {
     CHANGE_NAME(Method.PUT, "/customer/profile", ChangeNameRequest.class, ChangeNameResponse.class),
     DEPOSIT_MONEY(Method.POST, "/accounts/deposit", DepositMoneyRequest.class, BankAccount.class),
     TRANSFER_MONEY(Method.POST, "/accounts/transfer", TransferMoneyRequest.class, TransferMoneyResponse.class),
+    TRANSFER_FRAUD_CHECK(Method.POST, "/accounts/transfer-with-fraud-check", TransferMoneyRequest.class, TransferFraudCheckResponse.class),
     GET_USER_PROFILE(Method.GET, "/customer/profile", null, UserProfile.class),
     GET_ALL_USERS(Method.GET, "/admin/users", null, UserProfiles.class),
     GET_USER_ACCOUNTS(Method.GET, "/customer/accounts", null, BankAccounts.class),

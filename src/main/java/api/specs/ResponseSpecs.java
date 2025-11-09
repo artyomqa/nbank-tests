@@ -49,6 +49,20 @@ public class ResponseSpecs {
                 .build();
     }
 
+    public static ResponseSpecification successfulFraudCheck(int senderAccountId, int receiverAccountId, float amount) {
+        return defaultResponseBuilder()
+                .expectStatusCode(200)
+                .expectBody("senderAccountId", equalTo(senderAccountId))
+                .expectBody("receiverAccountId", equalTo(receiverAccountId))
+                .expectBody("amount", equalTo(amount))
+                .expectBody("status", equalTo("APPROVED"))
+                .expectBody("message", equalTo("Transfer approved and processed immediately"))
+                .expectBody("fraudReason", equalTo("Low risk transaction"))
+                .expectBody("requiresVerification", equalTo(false))
+                .expectBody("requiresManualReview", equalTo(false))
+                .build();
+    }
+
     public static ResponseSpecification successfulChangeName(String newName) {
         return defaultResponseBuilder()
                 .expectStatusCode(200)
