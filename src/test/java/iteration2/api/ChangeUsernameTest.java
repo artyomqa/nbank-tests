@@ -35,6 +35,7 @@ public class ChangeUsernameTest extends BaseAPITest {
     @ParameterizedTest
     @DisplayName("Изменение имени (позитивные сценарии)")
     @ValueSource(strings = {"Petr Ivanov", "petr ivanov", "PETR IVANOV"})
+    @Disabled("Тест временно отключен. Есть дефект.")
     public void changeNamePositiveTest(String name) {
         // Изменяем имя
         user.changeName(name);

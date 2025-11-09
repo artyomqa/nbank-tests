@@ -13,7 +13,7 @@ public enum Endpoint {
     LOGIN(Method.POST, "/auth/login", LoginRequest.class, LoginResponse.class),
     DELETE_USER(Method.DELETE, "/admin/users/%d", null, null),
     CHANGE_NAME(Method.PUT, "/customer/profile", ChangeNameRequest.class, ChangeNameResponse.class),
-    DEPOSIT_MONEY(Method.POST, "/accounts/deposit", DepositMoneyRequest.class, BankAccount.class),
+    DEPOSIT_MONEY(Method.POST, "/accounts/deposit", DepositMoneyRequest.class, DepositMoneyResponse.class),
     TRANSFER_MONEY(Method.POST, "/accounts/transfer", TransferMoneyRequest.class, TransferMoneyResponse.class),
     TRANSFER_FRAUD_CHECK(Method.POST, "/accounts/transfer-with-fraud-check", TransferMoneyRequest.class, TransferFraudCheckResponse.class),
     GET_USER_PROFILE(Method.GET, "/customer/profile", null, UserProfile.class),

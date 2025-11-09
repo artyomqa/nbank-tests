@@ -112,8 +112,8 @@ public class User {
                 .send();
     }
 
-    public BankAccount depositFirstAccount(float amount) {
-        return new ModelRequester<BankAccount>(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+    public DepositMoneyResponse depositFirstAccount(float amount) {
+        return new ModelRequester<DepositMoneyResponse>(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send(new DepositMoneyRequest(firstAccountId, amount));
     }
 
@@ -125,8 +125,8 @@ public class User {
         }
     }
 
-    public BankAccount depositSecondAccount(float amount) {
-        return new ModelRequester<BankAccount>(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+    public DepositMoneyResponse depositSecondAccount(float amount) {
+        return new ModelRequester<DepositMoneyResponse>(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                 .send(new DepositMoneyRequest(secondAccountId, amount));
     }
 

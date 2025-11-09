@@ -60,7 +60,7 @@ public class DepositMoneyTest extends BaseAPITest {
         float expectedBalance = TestUtils.getCorrectAmount(initialBalance + amount);
 
         // Пополняем баланс
-        BankAccount response = firstUser.depositFirstAccount(amount);
+        DepositMoneyResponse response = firstUser.depositFirstAccount(amount);
 
         softly.assertThat(response.getId()).isEqualTo(firstUser.firstAccountId());
         softly.assertThat(response.getBalance()).isEqualTo(expectedBalance);

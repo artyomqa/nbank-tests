@@ -10,5 +10,10 @@ public class Transaction extends BaseModel {
     private float amount;
     private String type;
     private String timestamp;
+    private RelatedAccount relatedAccount;
+    private String status;
+    private boolean fraudCheckRequired;
+    private String timestampAsString;
     private int relatedAccountId;
+    private float amountAsDouble;
 }
