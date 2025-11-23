@@ -9,7 +9,7 @@ public abstract class Requester {
     protected final Endpoint endpoint;
     protected final RequestSpecification requestSpecification;
     protected final ResponseSpecification responseSpecification;
-    protected final String apiVersion = Config.getString("service.apiVersion");
+    protected final String apiVersion = Config.getString("service.api.version");
 
     public Requester(Endpoint endpoint, RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
         this.endpoint = endpoint;

@@ -18,7 +18,7 @@ public class BaseUITest extends BaseTest {
         Configuration.remote = Config.getString("selenoid.url");
         Configuration.baseUrl = Config.getString("service.host");
         Configuration.browser = Config.getString("selenoid.browser");
-        Configuration.browserSize = Config.getString("selenoid.browserSize");
+        Configuration.browserSize = Config.getString("selenoid.browser.size");
 
         Configuration.browserCapabilities.setCapability(
                 "selenoid:options",

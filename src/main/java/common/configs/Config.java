@@ -21,30 +21,37 @@ public class Config {
         }
     }
 
-    public static String getString(String key) {
-        String value = instance.properties.getProperty(key);
-        if (value == null) {
-            throw new IllegalArgumentException("Key " + key + " not found in " + fileName);
+    private String getValue(String key) {
+        // Приоритет 1: системное свойство
+        String systemValue = System.getProperty(key);
+        if (systemValue != null) {
+            return systemValue;
         }
 
-        return value;
+        // Приоритет 2: переменная окружения
+        String envValue = System.getenv(key.toUpperCase().replace('.', '_'));
+        if (envValue != null) {
+            return envValue;
+        }
+
+        // Приоритет 3: config.properties
+        String configValue = instance.properties.getProperty(key);
+        if (configValue != null) {
+            return configValue;
+        }
+        throw new IllegalArgumentException("Env variable " + key.toUpperCase().replace('.', '_') + " does not exist and key "
+                + key + " not found.");
+    }
+
+    public static String getString(String key) {
+        return instance.getValue(key);
     }
 
     public static int getInt(String key) {
-        String value = instance.properties.getProperty(key);
-        if (value == null) {
-            throw new IllegalArgumentException("Key " + key + " not found in " + fileName);
-        }
-
-        return Integer.parseInt(value);
+        return Integer.parseInt(instance.getValue(key));
     }
 
     public static boolean getBoolean(String key) {
-        String value = instance.properties.getProperty(key);
-        if (value == null) {
-            throw new IllegalArgumentException("Key " + key + " not found in " + fileName);
-        }
-
-        return Boolean.parseBoolean(value);
+        return Boolean.parseBoolean(instance.getValue(key));
     }
 }
