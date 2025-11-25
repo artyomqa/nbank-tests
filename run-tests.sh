@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Переменные окружения
+SERVICE_HOST=http://109.120.135.36
+SERVICE_PORT=4111
+SELENOID_URL=http://109.120.135.36:4444/wd/hub
 # Имя образа
 IMAGE_NAME=nbank-tests
 # Имя контейнера
@@ -23,7 +27,7 @@ mkdir -p "$TEST_OUTPUT_DIR/report"
 
 # Запуск контейнера с автотестами
 # --rm удаляем контейнер после прохождения тестов
-# -v монтируем тома для сохранения результатов тестов
+# -v монтируем папки для сохранения результатов тестов
 # -e передаем переменные окружения в контейнер
 echo ">>> Запуск тестов"
 docker run --rm \
@@ -32,9 +36,9 @@ docker run --rm \
   -v "$TEST_OUTPUT_DIR/results":/app/target/surefire-reports \
   -v "$TEST_OUTPUT_DIR/report":/app/target/site \
   -e TEST_PROFILE="$TEST_PROFILE" \
-  -e SERVICE_HOST=http://109.120.135.36 \
-  -e SERVICE_PORT=4111 \
-  -e SELENOID_URL=http://109.120.135.36:4444/wd/hub \
+  -e SERVICE_HOST="$SERVICE_HOST" \
+  -e SERVICE_PORT="$SERVICE_PORT" \
+  -e SELENOID_URL="$SELENOID_URL" \
 $IMAGE_NAME
 
 # Вывод результатов
