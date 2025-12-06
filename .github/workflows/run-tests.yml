@@ -1,6 +1,8 @@
 name: Run tests
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
 
 jobs:
   run-tests:
@@ -17,7 +19,9 @@ jobs:
           cache: maven
 
       - name: Set up services
-        run: bash ./docker-compose/start-docker-compose.sh
+        run: cd docker-compose && bash start-docker-compose.sh
 
       - name: Run tests
         run: ./mvnw clean test -q
+        env:
+          FRONTEND_URL: http://frontend

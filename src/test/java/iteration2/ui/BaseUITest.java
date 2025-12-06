@@ -16,7 +16,7 @@ public class BaseUITest extends BaseTest {
     @BeforeAll
     public static void setupSelenoid() {
         Configuration.remote = Config.getString("selenoid.url");
-        Configuration.baseUrl = Config.getString("service.host");
+        Configuration.baseUrl = Config.getString("frontend.url");
         Configuration.browser = Config.getString("selenoid.browser");
         Configuration.browserSize = Config.getString("selenoid.browser.size");
 
