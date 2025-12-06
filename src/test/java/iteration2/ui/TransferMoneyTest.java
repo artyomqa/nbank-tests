@@ -80,7 +80,7 @@ public class TransferMoneyTest extends BaseUITest {
                 .goToMakeTransferPage()
                 .onPage(TransferMoneyPage.class)
                 .transfer(firstUser.firstAccountId(), receiverName, receiverAccountNumber, MAX_TRANSFER_AMOUNT + 0.01f, true)
-                .checkAlertMessageAndAccept(BankAlert.INVALID_TRANSFER_AMOUNT.getMessage())
+                .checkAlertMessageAndAccept(BankAlert.MAX_TRANSFER_EXCEEDED.getMessage())
                 .shouldBeOpened();
 
         // Проверяем, что балансы пользователей не изменились
@@ -99,7 +99,7 @@ public class TransferMoneyTest extends BaseUITest {
                 .goToMakeTransferPage()
                 .onPage(TransferMoneyPage.class)
                 .transfer(firstUser.firstAccountId(), receiverName, receiverAccountNumber, 0f, true)
-                .checkAlertMessageAndAccept(BankAlert.INVALID_TRANSFER_AMOUNT.getMessage())
+                .checkAlertMessageAndAccept(BankAlert.TRANSFER_AMOUNT_LESS_MIN.getMessage())
                 .shouldBeOpened();
 
         // Проверяем, что балансы пользователей не изменились
