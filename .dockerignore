@@ -1,0 +1,29 @@
+### IntelliJ IDEA ###
+.idea
+*.iml
+
+### Mac OS ###
+.DS_Store
+
+### Git ###
+.git
+.gitignore
+
+### Build files ###
+target
+build
+
+### Test output ###
+test-output
+
+### dockerignore ###
+.dockerignore
+
+### Скрипт запуска тестов с хоста ###
+run-tests.sh
+
+### Скрипт для отправки образа в Docker Hub ###
+push-tests.sh
+
+### Docker Compose ###
+docker-compose
