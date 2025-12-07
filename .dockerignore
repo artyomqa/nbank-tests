@@ -26,5 +26,5 @@ run-tests.sh
 ### Скрипт для отправки образа в Docker Hub ###
 push-tests.sh
 
-### Docker Compose ###
+### Docker Compose files ###
 docker-compose
