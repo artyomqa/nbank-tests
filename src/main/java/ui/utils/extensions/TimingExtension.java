@@ -20,7 +20,8 @@ public class TimingExtension implements BeforeTestExecutionCallback, AfterTestEx
 
         String testName = "[" + context.getRequiredTestClass().getPackageName() + "] " + context.getDisplayName();
         startTimes.put(testName, LocalTime.now());
-        System.out.printf("\uD83D\uDE80 Thread: %s | Test: %s  | Start time: %s\n", Thread.currentThread().getName(), testName,LocalTime.now());
+        System.out.printf("\uD83D\uDE80 Thread: %s | Test: %s  | Start time: %s\n",
+                Thread.currentThread().getName(), testName, LocalTime.now());
     }
 
     @Override
@@ -29,7 +30,8 @@ public class TimingExtension implements BeforeTestExecutionCallback, AfterTestEx
 
         String testName = "[" + context.getRequiredTestClass().getPackageName() + "] " + context.getDisplayName();
         Duration testDuration = Duration.between(startTimes.get(testName), LocalTime.now());
-        System.out.printf("\uD83C\uDFC1 Thread: %s | Test: %s  | Test duration: %s\n", Thread.currentThread().getName(), testName, getFormattedTime(testDuration));
+        System.out.printf("\uD83C\uDFC1 Thread: %s | Test: %s  | Test duration: %s\n",
+                Thread.currentThread().getName(), testName, getFormattedTime(testDuration));
     }
 
     private String getFormattedTime(Duration duration) {
