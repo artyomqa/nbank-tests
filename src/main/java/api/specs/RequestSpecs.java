@@ -3,6 +3,7 @@ package api.specs;
 import common.configs.Config;
 import api.models.LoginRequest;
 import api.utils.HttpLoggingFilter;
+import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
@@ -16,11 +17,12 @@ public class RequestSpecs {
 
     private static RequestSpecBuilder defaultRequestBuilder() {
         RequestSpecBuilder builder = new RequestSpecBuilder()
+                .addFilter(new AllureRestAssured())
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON);
 
         if (Config.getBoolean("log.http.enabled")) {
-            return builder.addFilter(new HttpLoggingFilter());
+            builder.addFilter(new HttpLoggingFilter());
         }
 
         return builder;
