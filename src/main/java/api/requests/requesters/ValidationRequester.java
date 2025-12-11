@@ -15,7 +15,7 @@ public class ValidationRequester extends Requester {
     }
 
     public ValidatableResponse send() {
-        return step("Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl(), () ->
+        return step("[API] Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl(), () ->
                 given()
                 .spec(requestSpecification)
                 .request(endpoint.getMethod(), apiVersion + endpoint.getUrl())
@@ -24,7 +24,7 @@ public class ValidationRequester extends Requester {
     }
 
     public ValidatableResponse send(BaseModel model) {
-        return step("Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl(), () ->
+        return step("[API] Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl(), () ->
                 given()
                 .spec(requestSpecification)
                 .body(model)
@@ -34,7 +34,7 @@ public class ValidationRequester extends Requester {
     }
 
     public ValidatableResponse send(int entityId) {
-        return step("Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl().formatted(entityId), () ->
+        return step("[API] Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl().formatted(entityId), () ->
                 given()
                 .spec(requestSpecification)
                 .request(endpoint.getMethod(), apiVersion + endpoint.getUrl().formatted(entityId))

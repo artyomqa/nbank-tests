@@ -14,7 +14,7 @@ public class ModelRequester<T extends BaseModel> extends Requester {
     }
 
     public T send() {
-        return step("Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl(), () ->
+        return step("[API] Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl(), () ->
                 given()
                 .spec(requestSpecification)
                 .request(endpoint.getMethod(), apiVersion + endpoint.getUrl())
@@ -25,7 +25,7 @@ public class ModelRequester<T extends BaseModel> extends Requester {
     }
 
     public T send(BaseModel model) {
-        return step("Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl(), () -> given()
+        return step("[API] Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl(), () -> given()
                 .spec(requestSpecification)
                 .body(model)
                 .request(endpoint.getMethod(), apiVersion + endpoint.getUrl())
@@ -36,7 +36,7 @@ public class ModelRequester<T extends BaseModel> extends Requester {
     }
 
     public T send(int entityId) {
-        return step("Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl().formatted(entityId), () ->
+        return step("[API] Отправляем " + endpoint.getMethod() + "-запрос на " + endpoint.getUrl().formatted(entityId), () ->
                 given()
                 .spec(requestSpecification)
                 .request(endpoint.getMethod(), apiVersion + endpoint.getUrl().formatted(entityId))
