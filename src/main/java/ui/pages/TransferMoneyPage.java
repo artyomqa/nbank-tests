@@ -9,6 +9,7 @@ import java.util.List;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static io.qameta.allure.Allure.step;
 
 public class TransferMoneyPage extends BasePage<TransferMoneyPage> {
     private final SelenideElement transferAgainButton = $$("button").findBy(Condition.text("Transfer Again"));
@@ -26,32 +27,64 @@ public class TransferMoneyPage extends BasePage<TransferMoneyPage> {
 
     @Override
     public TransferMoneyPage shouldBeOpened() {
-        transferButton.shouldBe(Condition.visible);
+        step("[UI] Проверяем, что страница " + url() + " открыта", () -> {
+            transferButton.shouldBe(Condition.visible);
+            attachScreenshot();
+        });
+
         return this;
     }
 
     public TransferMoneyPage transfer(int senderAccountId, String receiverName, String receiverAccountNumber, float amount, boolean confirm) {
-        senderAccountSelector.selectOptionByValue(String.valueOf(senderAccountId));
-        recipientNameInput.setValue(receiverName);
-        recipientAccountInput.setValue(receiverAccountNumber);
-        amountInput.setValue(String.valueOf(amount));
+        step("[UI] Выбираем счет отправителя", () -> {
+            senderAccountSelector.selectOptionByValue(String.valueOf(senderAccountId));
+            attachScreenshot();
+        });
 
-        confirmCheckbox.shouldNotBe(Condition.selected);
-        if (confirm) {
-            confirmCheckbox.click();
-        }
+        step("[UI] Вводим имя получателя", () -> {
+            recipientNameInput.setValue(receiverName);
+            attachScreenshot();
+        });
 
-        transferButton.click();
+
+        step("[UI] Вводим счет получателя", () -> {
+            recipientAccountInput.setValue(receiverAccountNumber);
+            attachScreenshot();
+        });
+
+        step("[UI] Вводим сумму", () -> {
+            amountInput.setValue(String.valueOf(amount));
+            attachScreenshot();
+        });
+
+        step("[UI] Проставляем значение чекбокса", () -> {
+            confirmCheckbox.shouldNotBe(Condition.selected);
+            if (confirm) {
+                confirmCheckbox.click();
+            }
+            attachScreenshot();
+        });
+
+        step("[UI] Клик по кнопке Send Transfer", () -> {
+            transferButton.click();
+        });
+
         return this;
     }
 
     public TransferMoneyPage switchToTransferAgain() {
-        transferAgainButton.click();
+        step("[UI] Клик по табу Transfer Again", () -> {
+            transferAgainButton.click();
+            attachScreenshot();
+        });
+
         return this;
     }
 
     public List<TransactionItem> getAllTransactions() {
-        ElementsCollection elements = $(".list-group").findAll("li");
-        return generatePageElements(elements, TransactionItem::new);
+        return step("[UI] Получаем список транзакций", () -> {
+            ElementsCollection elements = $(".list-group").findAll("li");
+            return generatePageElements(elements, TransactionItem::new);
+        });
     }
 }

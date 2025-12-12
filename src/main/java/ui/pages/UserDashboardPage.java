@@ -6,6 +6,7 @@ import com.codeborne.selenide.SelenideElement;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static io.qameta.allure.Allure.step;
 
 public class UserDashboardPage extends BasePage<UserDashboardPage> {
     private final SelenideElement userInfoBlock = $(".user-info");
@@ -21,33 +22,54 @@ public class UserDashboardPage extends BasePage<UserDashboardPage> {
 
     @Override
     public UserDashboardPage shouldBeOpened() {
-        welcomeText.shouldBe(Condition.visible);
+        step("[UI] Проверяем, что страница " + url() + " открыта", () -> {
+            welcomeText.shouldBe(Condition.visible);
+            attachScreenshot();
+        });
+
         return this;
     }
 
     public UserDashboardPage open() {
-        return Selenide.open(url(), UserDashboardPage.class);
+        return step("[UI] Переходим на страницу " + url(), () -> {
+            var page = Selenide.open(url(), UserDashboardPage.class);
+            attachScreenshot();
+            return page;
+        });
     }
 
     public UserDashboardPage goToEditProfilePage() {
-        userInfoBlock.click();
+        step("[UI] Клик по меню профиля", () -> {
+            userInfoBlock.click();
+        });
+
         return this;
     }
 
     public UserDashboardPage goToDepositMoneyPage() {
-        depositMoneyButton.click();
+        step("[UI] Клик по кнопке Deposit", () -> {
+            depositMoneyButton.click();
+        });
+
         return this;
     }
 
     public UserDashboardPage goToMakeTransferPage() {
-        transferMoneyButton.click();
+        step("[UI] Клик по кнопке Make a Transfer", () -> {
+            transferMoneyButton.click();
+        });
+
         return this;
     }
 
     // Проверка, что на странице отображается ожидаемое имя
     public UserDashboardPage checkUsernameEquals(String name) {
-        welcomeText.shouldHave(Condition.text("Welcome, " + name));
-        userNameInHeaderText.shouldHave(Condition.text(name));
+        step("[UI] Проверка отображение имени на странице " + url(), () -> {
+            welcomeText.shouldHave(Condition.text("Welcome, " + name));
+            userNameInHeaderText.shouldHave(Condition.text(name));
+            attachScreenshot();
+        });
+
         return this;
     }
 }

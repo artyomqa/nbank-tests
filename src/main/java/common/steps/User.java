@@ -107,7 +107,8 @@ public class User {
 
     public List<Transaction> getFirstAccountTransactions() {
         return step("[API] Получаем список транзакций по первому счету",
-                () -> new ModelRequester<Transactions>(Endpoint.GET_ACCOUNT_TRANSACTIONS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+                () -> new ModelRequester<Transactions>(Endpoint.GET_ACCOUNT_TRANSACTIONS,
+                        RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                         .send(firstAccountId)
                         .getTransactions()
         );
@@ -115,7 +116,8 @@ public class User {
 
     public List<Transaction> getSecondAccountTransactions() {
         return step("[API] Получаем список транзакций по второму счету",
-                () -> new ModelRequester<Transactions>(Endpoint.GET_ACCOUNT_TRANSACTIONS, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
+                () -> new ModelRequester<Transactions>(Endpoint.GET_ACCOUNT_TRANSACTIONS,
+                        RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk())
                         .send(secondAccountId)
                         .getTransactions()
         );
@@ -137,7 +139,8 @@ public class User {
 
     public void depositFirstAccount(float amount, int repeat) {
         step("[API] Пополняем " + repeat + " раз(а) первый счет пользователя с id " + id + " на сумму " + amount, () -> {
-            ValidationRequester requester = new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
+            ValidationRequester requester = new ValidationRequester(Endpoint.DEPOSIT_MONEY,
+                    RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
 
             for (int i = 0; i < repeat; i++) {
                 requester.send(new DepositMoneyRequest(firstAccountId, amount));
@@ -154,7 +157,8 @@ public class User {
 
     public void depositSecondAccount(float amount, int repeat) {
         step("[API] Пополняем " + repeat + " раз(а) второй счет пользователя с id " + id + " на сумму " + amount, () -> {
-            ValidationRequester requester = new ValidationRequester(Endpoint.DEPOSIT_MONEY, RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
+            ValidationRequester requester = new ValidationRequester(Endpoint.DEPOSIT_MONEY,
+                    RequestSpecs.authWithToken(token), ResponseSpecs.returnsOk());
 
             for (int i = 0; i < repeat; i++) {
                 requester.send(new DepositMoneyRequest(secondAccountId, amount));
@@ -218,7 +222,8 @@ public class User {
 
         public Builder createFirstAccount() {
             return step("[API] Создаем первый счет для пользователя с id: " + id, () -> {
-                firstAccountId = new ValidationRequester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
+                firstAccountId = new ValidationRequester(Endpoint.CREATE_BANK_ACCOUNT,
+                        RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
                         .send()
                         .extract()
                         .as(BankAccount.class)
@@ -230,7 +235,8 @@ public class User {
 
         public Builder createSecondAccount() {
             return step("[API] Создаем второй счет для пользователя с id: " + id, () -> {
-                secondAccountId = new ValidationRequester(Endpoint.CREATE_BANK_ACCOUNT, RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
+                secondAccountId = new ValidationRequester(Endpoint.CREATE_BANK_ACCOUNT,
+                        RequestSpecs.authWithToken(token), ResponseSpecs.returnsCreated())
                         .send()
                         .extract()
                         .as(BankAccount.class)

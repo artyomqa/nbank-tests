@@ -3,8 +3,8 @@ package ui.pages;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.*;
+import static io.qameta.allure.Allure.step;
 
 public class DepositMoneyPage extends BasePage<DepositMoneyPage> {
     private final SelenideElement accountSelect = $(".account-selector");
@@ -17,14 +17,29 @@ public class DepositMoneyPage extends BasePage<DepositMoneyPage> {
     }
 
     public DepositMoneyPage shouldBeOpened() {
-        amountInput.shouldBe(Condition.visible);
+        step("[UI] Проверяем, что страница " + url() + " открыта", () -> {
+            amountInput.shouldBe(Condition.visible);
+            attachScreenshot();
+        });
+
         return this;
     }
 
     public DepositMoneyPage depositMoney(int accountId, float amount) {
-        accountSelect.selectOptionByValue(String.valueOf(accountId));
-        amountInput.setValue(String.valueOf(amount));
-        depositButton.click();
+        step("[UI] Выбираем счет", () -> {
+            accountSelect.selectOptionByValue(String.valueOf(accountId));
+            attachScreenshot();
+        });
+
+        step("[UI] Вводим сумму", () -> {
+            amountInput.setValue(String.valueOf(amount));
+            attachScreenshot();
+        });
+
+        step("[UI] Клик по кнопке Deposit", () -> {
+            depositButton.click();
+        });
+
         return this;
     }
 }
