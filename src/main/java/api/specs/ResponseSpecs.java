@@ -1,0 +1,59 @@
+package api.specs;
+
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.specification.ResponseSpecification;
+
+import static org.hamcrest.Matchers.equalTo;
+
+public class ResponseSpecs {
+    private ResponseSpecs() {}
+
+    private static ResponseSpecBuilder defaultResponseBuilder() {
+        return new ResponseSpecBuilder();
+    }
+
+    public static ResponseSpecification returnsOk() {
+        return defaultResponseBuilder()
+                .expectStatusCode(200)
+                .build();
+    }
+
+    public static ResponseSpecification returnsCreated() {
+        return defaultResponseBuilder()
+                .expectStatusCode(201)
+                .build();
+    }
+
+    public static ResponseSpecification returnsBadRequest() {
+        return defaultResponseBuilder()
+                .expectStatusCode(400)
+                .build();
+    }
+
+    public static ResponseSpecification returnsUnauthorized() {
+        return defaultResponseBuilder()
+                .expectStatusCode(401)
+                .build();
+    }
+
+    public static ResponseSpecification returnsForbidden() {
+        return defaultResponseBuilder()
+                .expectStatusCode(403)
+                .build();
+    }
+
+    public static ResponseSpecification successfulTransfer() {
+        return defaultResponseBuilder()
+                .expectStatusCode(200)
+                .expectBody("message", equalTo("Transfer successful"))
+                .build();
+    }
+
+    public static ResponseSpecification successfulChangeName(String newName) {
+        return defaultResponseBuilder()
+                .expectStatusCode(200)
+                .expectBody("customer.name", equalTo(newName))
+                .expectBody("message", equalTo("Profile updated successfully"))
+                .build();
+    }
+}
