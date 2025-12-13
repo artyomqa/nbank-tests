@@ -1,5 +1,7 @@
 package api.specs;
 
+import com.github.viclovsky.swagger.coverage.FileSystemOutputWriter;
+import com.github.viclovsky.swagger.coverage.SwaggerCoverageRestAssured;
 import common.configs.Config;
 import api.models.LoginRequest;
 import api.utils.HttpLoggingFilter;
@@ -10,6 +12,10 @@ import io.restassured.specification.RequestSpecification;
 import api.requests.Endpoint;
 import api.requests.requesters.ValidationRequester;
 
+import java.nio.file.Paths;
+
+import static com.github.viclovsky.swagger.coverage.SwaggerCoverageConstants.OUTPUT_DIRECTORY;
+
 public class RequestSpecs {
     private static String adminToken;
 
@@ -18,6 +24,7 @@ public class RequestSpecs {
     private static RequestSpecBuilder defaultRequestBuilder() {
         RequestSpecBuilder builder = new RequestSpecBuilder()
                 .addFilter(new AllureRestAssured())
+                .addFilter(new SwaggerCoverageRestAssured(new FileSystemOutputWriter(Paths.get("target/" + OUTPUT_DIRECTORY))))
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON);
 
