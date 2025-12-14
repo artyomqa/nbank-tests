@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Build artifacts
+build/
+target/
+test-output/
+
+# Source code
+src/
+
+# Swagger coverage tool
+.swagger-coverage-commandline/
