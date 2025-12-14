@@ -54,6 +54,15 @@ jobs:
           fi
           sudo mkdir -p allure-report/swagger-coverage/${{ github.run_number }}
           sudo cp swagger-coverage-report.html allure-report/swagger-coverage/${{ github.run_number }}
+          sudo mkdir -p allure-report/swagger-coverage/latest
+          sudo cp swagger-coverage-report.html allure-report/swagger-coverage/latest/
+
+      - name: Add Allure plugin (API Coverage)
+        if: always()
+        run: |
+          sudo mkdir -p allure-report/plugin/swagger-coverage
+          sudo cp .swagger-coverage-commandline/allure-plugin-for-swagger-tab/* \
+                  allure-report/plugin/swagger-coverage/
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
