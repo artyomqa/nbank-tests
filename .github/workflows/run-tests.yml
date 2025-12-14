@@ -25,3 +25,38 @@ jobs:
         run: ./mvnw clean test -q
         env:
           FRONTEND_URL: http://frontend
+
+      - name: Run Swagger coverage
+        if: always()
+        run: .swagger-coverage-commandline/bin/swagger-coverage-commandline -s http://localhost:4111/v3/api-docs -i target/swagger-coverage-output
+
+      - name: Load test report history
+        uses: actions/checkout@v2
+        if: always()
+        with:
+          ref: test-report # Название ветки с историей тестов (A)
+          path: previous-test-report # Имя каталога, куда скачивается история (B)
+
+      - name: Build allure report
+        uses: simple-elf/allure-report-action@v1.7
+        if: always()
+        with:
+          gh_pages: previous-test-report # Имя каталога, куда скачали историю (B)
+          allure_results: target/allure-results # Путь к каталогу с текущими (сырыми) результатами тестов
+          allure_history: allure-report # Имя каталога, куда сохраняется сгенерированный отчет (C)
+
+      - name: Build Swagger coverage report
+        if: always()
+        run: cp swagger-coverage-report.html allure-report/${{ github.run_number }}
+
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: test-report # Название ветки, в которую публикуется отчет (A)
+          publish_dir: allure-report # Директория, в которую публикуется отчет (C)
+
+      - name: Stopping services
+        if: always()
+        run: cd docker-compose && docker compose down
