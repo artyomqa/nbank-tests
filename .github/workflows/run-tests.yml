@@ -38,16 +38,22 @@ jobs:
           path: previous-test-report # Имя каталога, куда скачивается история (B)
 
       - name: Build allure report
-        uses: simple-elf/allure-report-action@v1.7
+        uses: simple-elf/allure-report-action@master
         if: always()
         with:
           gh_pages: previous-test-report # Имя каталога, куда скачали историю (B)
           allure_results: target/allure-results # Путь к каталогу с текущими (сырыми) результатами тестов
           allure_history: allure-report # Имя каталога, куда сохраняется сгенерированный отчет (C)
 
-      - name: Build Swagger coverage report
+      - name: Save Swagger coverage report
         if: always()
-        run: cp swagger-coverage-report.html allure-report/${{ github.run_number }}
+        run: |
+          sudo mkdir -p allure-report/swagger-coverage
+          if [ -d previous-test-report/swagger-coverage ]; then
+            sudo cp -r previous-test-report/swagger-coverage/* allure-report/swagger-coverage/
+          fi
+          sudo mkdir -p allure-report/swagger-coverage/${{ github.run_number }}
+          sudo cp swagger-coverage-report.html allure-report/swagger-coverage/${{ github.run_number }}
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
@@ -55,7 +61,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: test-report # Название ветки, в которую публикуется отчет (A)
-          publish_dir: allure-report # Директория, в которую публикуется отчет (C)
+          publish_dir: allure-report # Директория, содержимое которой публикуется в ветку (C)
 
       - name: Stopping services
         if: always()
