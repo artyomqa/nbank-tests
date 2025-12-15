@@ -63,6 +63,10 @@ jobs:
           sudo mkdir -p allure-report/plugin/swagger-coverage
           sudo cp .swagger-coverage-commandline/allure-plugin-for-swagger-tab/* \
                   allure-report/plugin/swagger-coverage/
+          # ensure plugin JS is loaded into the report
+          if ! grep -q "plugin/swagger-coverage/index.js" allure-report/index.html; then
+            sudo sed -i '/plugin\/screen-diff\/index.js"/a\    <script src="plugin/swagger-coverage/index.js"></script>' allure-report/index.html
+          fi
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3

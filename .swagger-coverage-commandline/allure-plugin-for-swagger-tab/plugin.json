@@ -1,7 +1,7 @@
 {
   "id": "swagger-coverage",
   "name": "API Coverage",
-  "jsFiles": [],
+  "jsFiles": ["index.js"],
   "cssFiles": [],
   "htmlFiles": ["index.html"]
 }
