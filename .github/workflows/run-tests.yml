@@ -1,0 +1,110 @@
+name: Run tests
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    env:
+      SWAGGER_COVERAGE_THRESHOLD: 50
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '22'
+          cache: maven
+
+      - name: Set up services
+        run: cd docker-compose && bash start-docker-compose.sh
+
+      - name: Run tests
+        run: ./mvnw clean test -q
+        env:
+          FRONTEND_URL: http://frontend
+
+      - name: Run Swagger coverage
+        if: always()
+        run: .swagger-coverage-commandline/bin/swagger-coverage-commandline -s http://localhost:4111/v3/api-docs -i target/swagger-coverage-output
+
+      - name: Check Swagger coverage threshold
+        if: always()
+        run: |
+          if [ ! -f swagger-coverage-results.json ]; then
+            echo "Ошибка! swagger-coverage-results.json не найден."
+            exit 1
+          fi
+
+          COVERAGE=$(jq '
+            .operations
+            | to_entries
+            | map(.value)
+            | {
+                covered: (map(.coveredConditionCount) | add),
+                all:      (map(.allConditionCount)      | add)
+              }
+            | .percent = (.covered / .all * 100)
+            | .percent
+          ' swagger-coverage-results.json)
+
+          echo "Swagger coverage: ${COVERAGE}%"
+
+          COVERAGE_INT=${COVERAGE%.*}
+          if (( COVERAGE_INT < SWAGGER_COVERAGE_THRESHOLD )); then
+            echo "Покрытие автотестами: (${COVERAGE}%). Значение ниже порога: (${SWAGGER_COVERAGE_THRESHOLD}%). Билд падает."
+            exit 1
+          fi
+
+      - name: Load test report history
+        uses: actions/checkout@v2
+        if: always()
+        with:
+          ref: test-report # Название ветки с историей тестов (A)
+          path: previous-test-report # Имя каталога, куда скачивается история (B)
+
+      - name: Build allure report
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        with:
+          gh_pages: previous-test-report # Имя каталога, куда скачали историю (B)
+          allure_results: target/allure-results # Путь к каталогу с текущими (сырыми) результатами тестов
+          allure_history: allure-report # Имя каталога, куда сохраняется сгенерированный отчет (C)
+
+      - name: Save Swagger coverage report
+        if: always()
+        run: |
+          sudo mkdir -p allure-report/swagger-coverage
+          if [ -d previous-test-report/swagger-coverage ]; then
+            sudo cp -r previous-test-report/swagger-coverage/* allure-report/swagger-coverage/
+          fi
+          sudo mkdir -p allure-report/swagger-coverage/${{ github.run_number }}
+          sudo cp swagger-coverage-report.html allure-report/swagger-coverage/${{ github.run_number }}
+          sudo mkdir -p allure-report/swagger-coverage/latest
+          sudo cp swagger-coverage-report.html allure-report/swagger-coverage/latest/
+
+      - name: Add Allure plugin (API Coverage)
+        if: always()
+        run: |
+          sudo mkdir -p allure-report/plugin/swagger-coverage
+          sudo cp allure-plugins/swagger-coverage/* allure-report/plugin/swagger-coverage/
+
+          if ! grep -q "plugin/swagger-coverage/index.js" allure-report/index.html; then
+            sudo perl -0777 -i -pe 's@(</body>)@    <script src="plugin/swagger-coverage/index.js"></script>\n$1@' allure-report/index.html
+          fi
+
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: test-report # Название ветки, в которую публикуется отчет (A)
+          publish_dir: allure-report # Директория, содержимое которой публикуется в ветку (C)
+
+      - name: Stopping services
+        if: always()
+        run: cd docker-compose && docker compose down
