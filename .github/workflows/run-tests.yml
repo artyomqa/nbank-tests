@@ -63,7 +63,6 @@ jobs:
           sudo mkdir -p allure-report/plugin/swagger-coverage
           sudo cp allure-plugins/swagger-coverage/* allure-report/plugin/swagger-coverage/
 
-          # ensure plugin JS is loaded into the report (robust insertion before </body>)
           if ! grep -q "plugin/swagger-coverage/index.js" allure-report/index.html; then
             sudo perl -0777 -i -pe 's@(</body>)@    <script src="plugin/swagger-coverage/index.js"></script>\n$1@' allure-report/index.html
           fi
