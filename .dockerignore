@@ -28,3 +28,6 @@ push-tests.sh
 
 ### Docker Compose files ###
 docker-compose
+
+### Kube files ###
+kube
