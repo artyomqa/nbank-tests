@@ -27,6 +27,10 @@ helm repo update
 
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace -f monitoring-values.yaml
 
+echo ">>> Ожидание готовности подов"
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=grafana -n monitoring --timeout=300s
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=prometheus -n monitoring --timeout=300s
+
 echo  ">>> Проброс портов для Prometheus и Grafana"
 kubectl port-forward svc/monitoring-kube-prometheus-prometheus -n monitoring 3001:9090 > /dev/null 2>&1 &
 kubectl port-forward svc/monitoring-grafana -n monitoring 3002:80 > /dev/null 2>&1 &
