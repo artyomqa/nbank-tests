@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selenoid   # Название Deployment (kubectl get deployment selenoid)
+spec:
+  replicas: 1   # Количество реплик
+  selector:   # Селектор, который определяет, какими подами управляет этот Deployment
+    matchLabels:
+      app: selenoid   # Ищем поды, у которых есть label 'app' со значением 'selenoid'
+  template:   # Шаблон для создания новых подов
+    metadata:
+      labels:
+        app: selenoid   # Метки, которые будут установлены на каждый созданный Pod (должны совпадать с selector.matchLabels)
+    spec:
+      containers:
+        - name: selenoid
+          image: aerokube/selenoid:latest
+          args: ["-container-network", "nbank-network", "-limit", "3"]
+          ports:
+            - containerPort: 4444
+          volumeMounts:   # Определяет, какие тома и куда именно будут подключены внутри контейнера
+            - name: docker-sock   # Ссылка на volume с именем docker-sock, определенный ниже (spec.volumes.name)
+              mountPath: /var/run/docker.sock  # Путь внутри контейнера, куда будет подключен volume
+            - name: selenoid-config
+              mountPath: /etc/selenoid
+      volumes:   # Volumes существуют независимо от контейнеров и могут переживать их перезапуск
+        - name: docker-sock
+          hostPath:   # Volume типа hostPath - монтирует файл или директорию с хостовой машины (ноды) в Pod
+            path: /var/run/docker.sock
+        - name: selenoid-config
+          configMap:   # Volume типа configMap - монтирует данные из объекта ConfigMap
+            name: selenoid-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: selenoid   # Название Service
+spec:
+  selector:
+    app: selenoid   # Селектор определяет, на какие поды будет направлять трафик этот Service
+  ports:
+    - protocol: TCP
+      port: 4444   # Порт, на котором Service будет доступен внутри кластера
+      targetPort: 4444   # Порт на целевом контейнере (внутри пода), куда Service будет перенаправлять трафик
+  type: NodePort   # Тип Service'а. NodePort делает Service доступным снаружи кластера

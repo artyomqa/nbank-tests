@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend   # Название Deployment (kubectl get deployment backend)
+spec:
+  replicas: 1   # Количество реплик
+  selector:   # Селектор, который определяет, какими подами управляет этот Deployment
+    matchLabels:
+      app: backend   # Ищем поды, у которых есть label 'app' со значением 'backend'
+  template:   # Шаблон для создания новых подов
+    metadata:
+      labels:
+        app: backend   # Метки, которые будут установлены на каждый созданный Pod (должны совпадать с selector.matchLabels)
+      annotations:
+        co.elastic.logs/enabled: "true"
+        co.elastic.logs/module: springboot
+        co.elastic.logs/json.keys_under_root: "true"
+        co.elastic.logs/json.add_error_key: "true"
+    spec:
+      containers:
+        - name: backend
+          image: nobugsme/nbank:with_validation_fix
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4111
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend   # Название Service
+  labels:
+    app: backend
+spec:
+  selector:
+    app: backend   # Селектор определяет, на какие поды будет направлять трафик этот Service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 4111   # Порт, на котором Service будет доступен внутри кластера
+      targetPort: 4111   # Порт на целевом контейнере (внутри пода), куда Service будет перенаправлять трафик
+  type: NodePort   # Тип Service'а. NodePort делает Service доступным снаружи кластера

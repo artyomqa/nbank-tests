@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend   # Название Deployment (kubectl get deployment frontend)
+spec:
+  replicas: 1   # Количество реплик
+  selector:   # Селектор, который определяет, какими подами управляет этот Deployment
+    matchLabels:
+      app: frontend   # Ищем поды, у которых есть label 'app' со значением 'frontend'
+  template:   # Шаблон для создания новых подов
+    metadata:
+      labels:
+        app: frontend   # Метки, которые будут установлены на каждый созданный Pod (должны совпадать с selector.matchLabels)
+    spec:
+      containers:
+        - name: frontend
+          image: nobugsme/nbank-ui:with_nginx
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend   # Название Service
+spec:
+  selector:
+    app: frontend   # Селектор определяет, на какие поды будет направлять трафик этот Service
+  ports:
+    - protocol: TCP
+      port: 80   # Порт, на котором Service будет доступен внутри кластера
+      targetPort: 80   # Порт на целевом контейнере (внутри пода), куда Service будет перенаправлять трафик
+  type: NodePort   # Тип Service'а. NodePort делает Service доступным снаружи кластера
