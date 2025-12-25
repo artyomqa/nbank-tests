@@ -29,9 +29,9 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack -n 
 
 echo ">>> Создание namespace для логирования"
 kubectl create namespace logging --dry-run=client -o yaml | kubectl apply -f -
-echo ">>> Установка Elasticsearch (через манифесты)"
+
+echo ">>> Установка Elasticsearch, Kibana"
 kubectl apply -n logging -f logging/elasticsearch.yaml
-echo ">>> Установка Kibana (через манифесты)"
 kubectl apply -n logging -f logging/kibana.yaml
 
 echo ">>> Ожидание готовности подов"
@@ -48,7 +48,6 @@ echo ">>> Ожидание готовности подов"
 kubectl wait --for=condition=ready pod -l app=filebeat -n logging --timeout=120s
 
 echo ">>> Ожидание инициализации шаблона индекса Filebeat"
-echo "    (шаблон создается автоматически при первом запуске Filebeat)"
 sleep 10
 
 echo  ">>> Проброс портов для Prometheus, Grafana, Kibana"
@@ -60,4 +59,8 @@ echo ">>> Создание секретов для авторизации на �
 kubectl create secret generic backend-basic-auth --from-literal=username=admin --from-literal=password=admin -n monitoring
 kubectl apply -f spring-monitoring.yaml
 
+echo "Prometheus локально доступен по адресу: http://localhost:3001/"
+echo "Grafana локально доступна по адресу: http://localhost:3002/"
+echo "Kibana локально доступна по адресу: http://localhost:3003/"
+echo "Для подключения логирования перейти в UI -> Stack Management -> Data Views -> Create Data View и указать filebeat-*"
 echo ">>> Выполнено"
