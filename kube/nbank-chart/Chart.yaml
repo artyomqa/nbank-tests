@@ -1,6 +1,0 @@
-apiVersion: v2   # Версия формата Helm Chart
-appVersion: 1.0.0   # Версия приложения, которое будет развернуто с помощью этого чарта
-description: A helm chart for NBank   # Описание чарта
-name: nbank   # Имя чарта
-type: application   # Тип чарта
-version: 0.0.1   # Версия чарта
