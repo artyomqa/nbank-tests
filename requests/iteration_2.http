@@ -1,0 +1,466 @@
+###-----------------------------------------###
+###     Коллекция 1. Подготовка данных.     ###
+###-----------------------------------------###
+
+### Получение токена авторизации для админа.
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin"
+}
+
+
+### Создание первого пользователя.
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+    "username": "Alex",
+    "password": "pass123W!",
+    "role": "USER"
+}
+
+
+### Создание второго пользователя.
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+    "username": "Anna",
+    "password": "pass111X!",
+    "role": "USER"
+}
+
+
+### Создание счета у первого пользователя.
+POST http://localhost:4111/api/v1/accounts
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+
+
+### Создание второго счета у первого пользователя.
+POST http://localhost:4111/api/v1/accounts
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+
+
+### Создание счета у второго пользователя.
+POST http://localhost:4111/api/v1/accounts
+Authorization: Basic QW5uYTpwYXNzMTExWCE=
+
+
+###---------------------------------------------------###
+###     Коллекция 2. Депозит денег пользователем.     ###
+###---------------------------------------------------###
+
+### Позитивный сценарий. Пополнение баланса (рубли).
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 100
+}
+
+
+### Позитивный сценарий. Пополнение баланса (рубли и копейки).
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 115.99
+}
+
+
+### Пополнение баланса на минимальную возможную сумму (0.01).
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 0.01
+}
+
+
+### Пополнение баланса на максимальную суммую (5000).
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 5000.00
+}
+
+
+### Пополнение баланса на сумму, превышающую максимальную (>5000).
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 5000.01
+}
+
+
+### Получение счетов пользователя.
+GET http://localhost:4111/api/v1/customer/accounts
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+
+
+### Пополнение баланса на нулевую сумму.
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 0
+}
+
+
+### Пополнение баланса на отрицательную сумму.
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": -1
+}
+
+
+### Пополнение чужого баланса.
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 3,
+    "balance": 100
+}
+
+
+### Пополнение баланса на несуществующем id счета.
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "id": 555,
+    "balance": 100
+}
+
+
+### Пополнение баланса от имени администратора.
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 100
+}
+
+
+### Пополнение баланса неавторизованным пользователем.
+POST http://localhost:4111/api/v1/accounts/deposit
+Content-Type: application/json
+
+{
+    "id": 1,
+    "balance": 100
+}
+
+
+###--------------------------------------------------------------###
+###     Коллекция 3. Перевод денег с одного счета на другой.     ###
+###--------------------------------------------------------------###
+
+### Перевод между своими счетами.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 1,
+    "receiverAccountId": 2,
+    "amount": 10
+}
+
+
+### Перевод на счет другого пользователя.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 1,
+    "receiverAccountId": 3,
+    "amount": 20
+}
+
+
+### Перевод всей суммы на балансе.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 2,
+    "receiverAccountId": 3,
+    "amount": 10
+}
+
+
+### Перевод минимально возможной суммы (0.01).
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 6,
+    "receiverAccountId": 5,
+    "amount": 0.01
+}
+
+
+### Перевод максимально возможной суммы (10000).
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 2,
+    "receiverAccountId": 3,
+    "amount": 10000.0
+}
+
+
+### Перевод суммы, превышающей максимально допустимую (>10000).
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 2,
+    "receiverAccountId": 3,
+    "amount": 10000.01
+}
+
+
+### Перевод на сумму, превышающую остаток.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 1,
+    "receiverAccountId": 3,
+    "amount": 186
+}
+
+
+### Перевод нулевой суммы.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 1,
+    "receiverAccountId": 3,
+    "amount": 0
+}
+
+
+### Перевод отрицательной суммы.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 2,
+    "receiverAccountId": 3,
+    "amount": -1
+}
+
+
+### Перевод с чужого счета.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 3,
+    "receiverAccountId": 1,
+    "amount": 10
+}
+
+
+### Перевод с несуществующего счета.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 15,
+    "receiverAccountId": 1,
+    "amount": 10
+}
+
+
+### Перевод на несуществующий счет.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "senderAccountId": 1,
+    "receiverAccountId": 15,
+    "amount": 10
+}
+
+
+### Получение списка транзакций по своему счету.
+GET http://localhost:4111/api/v1/accounts/1/transactions
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+
+{
+    "senderAccountId": 2,
+    "receiverAccountId": 3,
+    "amount": 10
+}
+
+
+### Перевод от имени администратора.
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+    "senderAccountId": 1,
+    "receiverAccountId": 2,
+    "amount": 10
+}
+
+
+### Перевод неавторизованным пользователем.
+POST http://localhost:4111/api/v1/accounts/transfer
+Content-Type: application/json
+
+{
+    "senderAccountId": 1,
+    "receiverAccountId": 2,
+    "amount": 10
+}
+
+
+###----------------------------------------------------###
+###     Коллекция 4. Изменение имени пользователя.     ###
+###----------------------------------------------------###
+
+### Установка имени, когда оно еще не присвоено.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "name": "Petr"
+}
+
+
+### Изменение существующего имени.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "name": "Name-1_2."
+}
+
+
+### Изменение имени имени у администратора.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+    "name": "Ivan"
+}
+
+
+### Установка пустого имени.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "name": ""
+}
+
+
+### Установка имени, состоящего из пробелов.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "name": "   "
+}
+
+
+### Установка имени длиной 2 символа.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "name": "ab"
+}
+
+
+### Установка имени длиной 3 символа.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "name": "abc"
+}
+
+
+### Установка имени длиной 15 символов.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "name": "abcdefghijklmno"
+}
+
+
+### Установка имени длиной 16 символов.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "name": "abcdefghijklmnop"
+}
+
+
+### Установка имени, содержащего недопустимые символы.
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic QWxleDpwYXNzMTIzVyE=
+Content-Type: application/json
+
+{
+    "name": "Petr?"
+}
