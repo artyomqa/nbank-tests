@@ -1,0 +1,7 @@
+services:
+  wiremock:
+    image: wiremock-example:1.0
+    build: .
+    container_name: wiremock-example
+    ports:
+      - "8080:8080"
