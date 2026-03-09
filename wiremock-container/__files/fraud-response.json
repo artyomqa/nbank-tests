@@ -1,0 +1,8 @@
+{
+  "status": "SUCCESS",
+  "decision": "APPROVED",
+  "riskScore": 0.2,
+  "reason": "Low risk transaction",
+  "requiresManualReview": false,
+  "additionalVerificationRequired": false
+}

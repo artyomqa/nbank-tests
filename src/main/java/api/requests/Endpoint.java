@@ -1,0 +1,29 @@
+package api.requests;
+
+import api.models.*;
+import io.restassured.http.Method;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
+public enum Endpoint {
+    CREATE_USER(Method.POST, "/admin/users", CreateUserRequest.class, UserProfile.class),
+    CREATE_BANK_ACCOUNT(Method.POST, "/accounts", null, BankAccount.class),
+    LOGIN(Method.POST, "/auth/login", LoginRequest.class, LoginResponse.class),
+    DELETE_USER(Method.DELETE, "/admin/users/%d", null, null),
+    CHANGE_NAME(Method.PUT, "/customer/profile", ChangeNameRequest.class, ChangeNameResponse.class),
+    DEPOSIT_MONEY(Method.POST, "/accounts/deposit", DepositMoneyRequest.class, DepositMoneyResponse.class),
+    TRANSFER_MONEY(Method.POST, "/accounts/transfer", TransferMoneyRequest.class, TransferMoneyResponse.class),
+    TRANSFER_FRAUD_CHECK(Method.POST, "/accounts/transfer-with-fraud-check", TransferMoneyRequest.class, TransferFraudCheckResponse.class),
+    GET_USER_PROFILE(Method.GET, "/customer/profile", null, UserProfile.class),
+    GET_ALL_USERS(Method.GET, "/admin/users", null, UserProfiles.class),
+    GET_USER_ACCOUNTS(Method.GET, "/customer/accounts", null, BankAccounts.class),
+    GET_ACCOUNT_TRANSACTIONS(Method.GET, "/accounts/%d/transactions", null, Transactions.class);
+
+
+    private final Method method;
+    private final String url;
+    private final Class<? extends BaseModel> requestModel;
+    private final Class<? extends BaseModel> responseModel;
+}
