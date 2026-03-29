@@ -1,8 +1,10 @@
 package iteration2.ui;
 
+import com.codeborne.selenide.Selenide;
 import common.configs.Config;
 import com.codeborne.selenide.Configuration;
 import iteration2.BaseTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import ui.utils.extensions.BrowserMatchExtension;
@@ -23,5 +25,10 @@ public class BaseUITest extends BaseTest {
         Configuration.browserCapabilities.setCapability(
                 "selenoid:options",
                 Map.of("enableVNC", true, "enableLog", true));
+    }
+
+    @AfterEach
+    public void tearDown() {
+        Selenide.closeWebDriver();
     }
 }
